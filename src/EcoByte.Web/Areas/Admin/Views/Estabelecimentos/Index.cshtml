@@ -1,0 +1,26 @@
+@model List<Estabelecimento>
+@{
+    ViewData["Title"] = "Estabelecimentos";
+}
+
+<h1>Estabelecimentos</h1>
+
+<div class="tabela-container">
+    <table class="tabela">
+        <thead>
+            <tr><th>Nome</th><th>Email</th><th>Telefone</th><th>Ativo</th><th>Aprovado</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var e in Model)
+            {
+                <tr>
+                    <td>@e.NomeFantasia</td>
+                    <td>@e.Email</td>
+                    <td>@e.Telefone</td>
+                    <td><span class="badge @(e.Ativo ? "badge-sucesso" : "badge-erro")">@(e.Ativo ? "Sim" : "Nao")</span></td>
+                    <td><span class="badge @(e.Aprovado ? "badge-sucesso" : "badge-aviso")">@(e.Aprovado ? "Sim" : "Nao")</span></td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

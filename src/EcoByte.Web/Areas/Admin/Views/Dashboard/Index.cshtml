@@ -1,0 +1,29 @@
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Painel Administrativo";
+}
+
+<h1>Painel Administrativo</h1>
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <div class="numero">@Model.TotalUsuarios</div>
+        <div class="label">Usuarios</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="numero">@Model.TotalEstabelecimentos</div>
+        <div class="label">Estabelecimentos</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="numero">@Model.TotalSolicitacoes</div>
+        <div class="label">Solicitacoes</div>
+    </div>
+</div>
+
+<h2 style="margin:1.5rem 0 1rem;">Acesso Rapido</h2>
+<div style="display:flex;gap:1rem;flex-wrap:wrap;">
+    <a asp-controller="Produtos" asp-action="Index" class="btn btn-primary">Gerenciar Produtos</a>
+    <a asp-controller="Usuarios" asp-action="Index" class="btn btn-primary">Usuarios</a>
+    <a asp-controller="Estabelecimentos" asp-action="Index" class="btn btn-primary">Estabelecimentos</a>
+    <a asp-controller="Solicitacoes" asp-action="Index" class="btn btn-primary">Solicitacoes</a>
+</div>

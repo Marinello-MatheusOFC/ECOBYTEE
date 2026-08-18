@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - EcoByte</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav class="navbar">
+            <a asp-controller="Home" asp-action="Index" class="navbar-logo">EcoByte</a>
+            <button class="navbar-toggle" onclick="document.querySelector('.navbar-menu').classList.toggle('ativo')">&#9776;</button>
+            <ul class="navbar-menu">
+                <li><a asp-controller="Home" asp-action="Index">Inicio</a></li>
+                <li><a asp-controller="Produtos" asp-action="Index">Catalogo</a></li>
+                <li><a asp-controller="Home" asp-action="Sobre">Sobre</a></li>
+            </ul>
+            <div class="navbar-auth">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-controller="Perfil" asp-action="Index" class="btn-login">@User.Identity.Name</a>
+                    <a asp-controller="Conta" asp-action="Logout" class="btn-registro">Sair</a>
+                }
+                else
+                {
+                    <a asp-controller="Conta" asp-action="Login" class="btn-login">Entrar</a>
+                    <a asp-controller="Conta" asp-action="Registro" class="btn-registro">Cadastrar</a>
+                }
+            </div>
+        </nav>
+    </header>
+
+    <main class="container">
+        @RenderBody()
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 EcoByte - Reduza o desperdicio, ajude o planeta.</p>
+    </footer>
+
+    <script src="~/js/site.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

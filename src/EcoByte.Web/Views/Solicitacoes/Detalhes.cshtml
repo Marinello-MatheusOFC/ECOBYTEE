@@ -1,0 +1,25 @@
+@model SolicitacaoViewModel
+@{
+    ViewData["Title"] = "Detalhes da Solicitacao";
+}
+
+<h1>Solicitacao @Model.Id</h1>
+
+<div class="form-card">
+    <div class="form-group">
+        <label>Produto</label>
+        <p>@(Model.ProdutoNome ?? "N/D")</p>
+    </div>
+    <div class="form-group">
+        <label>Quantidade</label>
+        <p>@Model.Quantidade</p>
+    </div>
+    <div class="form-group">
+        <label>Status</label>
+        <p><span class="badge badge-info">@Model.StatusDescricao</span></p>
+    </div>
+    <div class="form-group">
+        <label>Data</label>
+        <p>@Model.CriadoEm.ToString("dd/MM/yyyy HH:mm")</p>
+    </div>
+</div>

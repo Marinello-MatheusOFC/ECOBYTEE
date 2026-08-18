@@ -1,0 +1,152 @@
+@model List<ProdutoResumoViewModel>
+@using EcoByte.Web.ViewModels
+@{
+    ViewData["Title"] = "Catalogo de Produtos";
+    var filtro = ViewBag.Filtro as ProdutoFiltroViewModel ?? new ProdutoFiltroViewModel();
+}
+
+<h1>Catalogo de Produtos</h1>
+
+@if (ViewBag.ErroFirestore == true)
+{
+    <div class="alerta alerta-erro">
+        <p>O banco de dados nao esta configurado. O catalogo esta indisponivel no momento.</p>
+    </div>
+}
+
+<form asp-controller="Produtos" asp-action="Index" method="get" class="filtros">
+    <div>
+        <label for="Termo">Buscar</label>
+        <input type="text" name="Termo" value="@filtro.Termo" placeholder="Nome do produto..." />
+    </div>
+    <div>
+        <label for="Categoria">Categoria</label>
+        <select name="Categoria">
+            <option value="">Todas</option>
+            @foreach (var cat in Enum.GetValues<CategoriaProduto>())
+            {
+                if (cat != CategoriaProduto.Desconhecida)
+                {
+                    <option value="@cat" selected="@(filtro.Categoria == cat)">@cat</option>
+                }
+            }
+        </select>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" name="SomenteVeganos" value="true"
+                   checked="@filtro.SomenteVeganos" /> Veganos
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" name="SomenteSemGluten" value="true"
+                   checked="@filtro.SomenteSemGluten" /> Sem Gluten
+        </label>
+    </div>
+    <div>
+        <label>
+            <input type="checkbox" name="SomenteSemLactose" value="true"
+                   checked="@filtro.SomenteSemLactose" /> Sem Lactose
+        </label>
+    </div>
+    <div>
+        <label for="Ordenacao">Ordenar por</label>
+        <select name="Ordenacao">
+            @foreach (var ord in Enum.GetValues<ProdutoOrdenacao>())
+            {
+                var display = ord.GetType().GetMember(ord.ToString())!
+                    .First()
+                    .GetCustomAttributes(typeof(System.ComponentModel.DataAnnotations.DisplayAttribute), false)
+                    .OfType<System.ComponentModel.DataAnnotations.DisplayAttribute>()
+                    .FirstOrDefault();
+                var label = display?.Name ?? ord.ToString();
+                <option value="@((int)ord)" selected="@(filtro.Ordenacao == ord)">@label</option>
+            }
+        </select>
+    </div>
+    <button type="submit">Filtrar</button>
+</form>
+
+@if (Model.Any())
+{
+    <div class="produtos-grid">
+        @foreach (var produto in Model)
+        {
+            <a asp-action="Detalhes" asp-route-id="@produto.Id" class="produto-card">
+                @if (!string.IsNullOrEmpty(produto.ImagemUrl))
+                {
+                    <img src="@produto.ImagemUrl" alt="@produto.Nome" />
+                }
+                else
+                {
+                    <div class="produto-sem-imagem">Sem imagem</div>
+                }
+                <div class="produto-info">
+                    <span class="produto-categoria">@produto.CategoriaDescricao</span>
+                    <h3>@produto.Nome</h3>
+                    <p class="produto-descricao">@produto.DescricaoResumida</p>
+                    <div class="produto-precos">
+                        <span class="preco-original">R$ @produto.PrecoOriginal.ToString("F2")</span>
+                        <span class="preco-promocional">R$ @produto.PrecoPromocional.ToString("F2")</span>
+                        @if (produto.PercentualDesconto > 0)
+                        {
+                            <span class="desconto">-@produto.PercentualDesconto%</span>
+                        }
+                    </div>
+                    <span class="produto-disponibilidade">@produto.TextoDisponibilidade</span>
+                    <div class="produto-tags">
+                        @if (produto.EhVegano)
+                        {
+                            <span class="tag tag-vegano">Vegano</span>
+                        }
+                        @if (produto.EhSemGluten)
+                        {
+                            <span class="tag tag-gluten">Sem Gluten</span>
+                        }
+                        @if (produto.EhSemLactose)
+                        {
+                            <span class="tag tag-lactose">Sem Lactose</span>
+                        }
+                    </div>
+                </div>
+            </a>
+        }
+    </div>
+
+    <nav class="paginacao">
+        @if (filtro.TemPaginaAnterior)
+        {
+            <a asp-action="Index"
+               asp-route-Termo="@filtro.Termo"
+               asp-route-Categoria="@filtro.Categoria"
+               asp-route-SomenteVeganos="@filtro.SomenteVeganos"
+               asp-route-SomenteSemGluten="@filtro.SomenteSemGluten"
+               asp-route-SomenteSemLactose="@filtro.SomenteSemLactose"
+               asp-route-Ordenacao="@((int)filtro.Ordenacao)"
+               asp-route-Pagina="@(filtro.Pagina - 1)">
+                Anterior
+            </a>
+        }
+        <span>Pagina @filtro.Pagina de @filtro.TotalPaginas</span>
+        @if (filtro.TemProximaPagina)
+        {
+            <a asp-action="Index"
+               asp-route-Termo="@filtro.Termo"
+               asp-route-Categoria="@filtro.Categoria"
+               asp-route-SomenteVeganos="@filtro.SomenteVeganos"
+               asp-route-SomenteSemGluten="@filtro.SomenteSemGluten"
+               asp-route-SomenteSemLactose="@filtro.SomenteSemLactose"
+               asp-route-Ordenacao="@((int)filtro.Ordenacao)"
+               asp-route-Pagina="@(filtro.Pagina + 1)">
+                Proximo
+            </a>
+        }
+    </nav>
+}
+else if (ViewBag.ErroFirestore != true)
+{
+    <div class="alerta alerta-vazio">
+        <p>Nenhum produto disponivel no momento.</p>
+    </div>
+}

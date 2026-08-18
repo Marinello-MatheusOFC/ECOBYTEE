@@ -1,0 +1,41 @@
+@{
+    ViewData["Title"] = "Meu Painel";
+}
+
+<h1>Meu Painel</h1>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alerta alerta-sucesso">@TempData["Sucesso"]</div>
+}
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <div class="numero">@ViewBag.TotalSolicitacoes</div>
+        <div class="label">Solicitacoes</div>
+    </div>
+</div>
+
+<h2 style="margin:1.5rem 0 1rem;">Solicitacoes Recentes</h2>
+
+@if (ViewBag.Solicitacoes != null)
+{
+    <div class="tabela-container">
+        <table class="tabela">
+            <thead>
+                <tr><th>Produto</th><th>Quantidade</th><th>Status</th><th>Data</th></tr>
+            </thead>
+            <tbody>
+                @foreach (SolicitacaoViewModel s in ViewBag.Solicitacoes)
+                {
+                    <tr>
+                        <td>@s.ProdutoNome</td>
+                        <td>@s.Quantidade</td>
+                        <td><span class="badge badge-info">@s.StatusDescricao</span></td>
+                        <td>@s.CriadoEm.ToString("dd/MM/yyyy")</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}

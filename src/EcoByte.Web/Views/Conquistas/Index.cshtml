@@ -1,0 +1,36 @@
+@model List<ConquistaViewModel>
+@{
+    ViewData["Title"] = "Conquistas";
+}
+
+<h1>Conquistas</h1>
+
+@if (Model.Any())
+{
+    <div class="produtos-grid">
+        @foreach (var c in Model)
+        {
+            <div class="produto-card" style="opacity:@(c.Desbloqueada ? "1" : "0.5");">
+                <div class="produto-info" style="text-align:center;">
+                    <div style="font-size:2rem;">@(c.Icone ?? "🏆")</div>
+                    <h3>@c.Nome</h3>
+                    <p class="produto-descricao">@c.Descricao</p>
+                    @if (c.Desbloqueada)
+                    {
+                        <span class="badge badge-sucesso">Desbloqueada</span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-aviso">Bloqueada</span>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="alerta alerta-vazio">
+        <p>Nenhuma conquista disponivel no momento.</p>
+    </div>
+}

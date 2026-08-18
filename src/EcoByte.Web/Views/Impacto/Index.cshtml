@@ -1,0 +1,30 @@
+@model ImpactoResumoViewModel
+@{
+    ViewData["Title"] = "Impacto Ambiental";
+}
+
+<h1>Impacto Ambiental</h1>
+<p style="color:var(--texto-secundario);margin-bottom:1.5rem;">Indicadores baseados em solicitacoes concluidas.</p>
+
+<div class="dashboard-grid">
+    <div class="dashboard-card">
+        <div class="numero">@Model.AlimentosSalvos</div>
+        <div class="label">Alimentos salvos (unidades)</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="numero">R$ @Model.ValorEconomizado.ToString("F2")</div>
+        <div class="label">Valor economizado</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="numero">@Model.Co2EvitadoKg kg</div>
+        <div class="label">CO2 evitado (estimativa)</div>
+    </div>
+    <div class="dashboard-card">
+        <div class="numero">@Model.SolicitacoesConcluidas</div>
+        <div class="label">Solicitacoes concluidas</div>
+    </div>
+</div>
+
+<p style="font-size:0.8rem;color:var(--texto-secundario);margin-top:1rem;">
+    * Estimativa de CO2 baseada na fator de conversao da FAO (0.31 kg CO2e por 100g de alimento).
+</p>

@@ -1,0 +1,38 @@
+@model List<ProdutoResumoViewModel>
+@{
+    ViewData["Title"] = "Gerenciar Produtos";
+    int pagina = ViewBag.Pagina ?? 1;
+    int total = ViewBag.TotalItens ?? 0;
+    int totalPaginas = total > 0 ? (int)Math.Ceiling((double)total / 20) : 0;
+}
+
+<h1>Produtos</h1>
+<a asp-controller="Produtos" asp-action="Create" class="btn btn-primary" style="margin-bottom:1rem;">Novo Produto</a>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alerta alerta-sucesso">@TempData["Sucesso"]</div>
+}
+
+<div class="tabela-container">
+    <table class="tabela">
+        <thead>
+            <tr><th>Nome</th><th>Categoria</th><th>Preco</th><th>Qtd</th><th>Acoes</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td>@p.Nome</td>
+                    <td>@p.CategoriaDescricao</td>
+                    <td>R$ @p.PrecoPromocional.ToString("F2")</td>
+                    <td>@p.QuantidadeDisponivel</td>
+                    <td>
+                        <a asp-controller="Produtos" asp-action="Edit" asp-route-id="@p.Id" class="btn btn-warning" style="padding:0.2rem 0.5rem;font-size:0.8rem;">Editar</a>
+                        <a asp-controller="Produtos" asp-action="Delete" asp-route-id="@p.Id" class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.8rem;">Excluir</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

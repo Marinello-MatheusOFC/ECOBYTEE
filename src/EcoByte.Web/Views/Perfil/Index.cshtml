@@ -1,0 +1,26 @@
+@model PerfilViewModel
+@{
+    ViewData["Title"] = "Meu Perfil";
+}
+
+<h1>Meu Perfil</h1>
+
+<div class="form-card">
+    <div class="form-group">
+        <label>Nome</label>
+        <p>@Model.Nome</p>
+    </div>
+    <div class="form-group">
+        <label>Email</label>
+        <p>@Model.Email</p>
+    </div>
+    <div class="form-group">
+        <label>Perfil</label>
+        <p>@Model.PerfilDescricao</p>
+    </div>
+    <div class="form-group">
+        <label>Membro desde</label>
+        <p>@Model.CriadoEm.ToString("dd/MM/yyyy")</p>
+    </div>
+    <a asp-action="Editar" class="btn btn-primary">Editar Nome</a>
+</div>

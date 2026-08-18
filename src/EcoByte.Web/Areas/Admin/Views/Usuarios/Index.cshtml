@@ -1,0 +1,25 @@
+@model List<Usuario>
+@{
+    ViewData["Title"] = "Usuarios";
+}
+
+<h1>Usuarios</h1>
+
+<div class="tabela-container">
+    <table class="tabela">
+        <thead>
+            <tr><th>Nome</th><th>Email</th><th>Perfil</th><th>Desde</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td>@u.Nome</td>
+                    <td>@u.Email</td>
+                    <td><span class="badge badge-info">@u.Perfil</span></td>
+                    <td>@u.CriadoEm.ToDateTime().ToString("dd/MM/yyyy")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

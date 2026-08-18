@@ -1,0 +1,40 @@
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Entrar";
+}
+
+<div class="auth-container">
+    <div class="form-card">
+        <h1>Entrar</h1>
+        <p style="color:var(--texto-secundario);margin-bottom:1.5rem;">Acesse sua conta EcoByte.</p>
+
+        @if (ViewData.ModelState.ErrorCount > 0)
+        {
+            <div class="alerta alerta-erro">
+                @Html.ValidationSummary()
+            </div>
+        }
+
+        <form asp-controller="Conta" asp-action="Login" method="post">
+            <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+
+            <div class="form-group">
+                <label asp-for="Email"></label>
+                <input asp-for="Email" type="email" />
+                <span asp-validation-for="Email"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Senha"></label>
+                <input asp-for="Senha" type="password" />
+                <span asp-validation-for="Senha"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width:100%;">Entrar</button>
+        </form>
+
+        <p style="text-align:center;margin-top:1rem;">
+            Nao tem conta? <a asp-controller="Conta" asp-action="Registro">Cadastre-se</a>
+        </p>
+    </div>
+</div>

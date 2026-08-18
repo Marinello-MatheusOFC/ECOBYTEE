@@ -1,0 +1,74 @@
+## .NET / ASP.NET Core
+bin/
+obj/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## NuGet
+*.nupkg
+*.snupkg
+**/[Pp]ackages/*
+!**/[Pp]ackages/build/
+*.nuget.props
+*.nuget.targets
+project.lock.json
+
+## Visual Studio
+.vs/
+*.dbmdl
+*.jfm
+*.publishsettings
+launchSettings.json
+
+## Rider
+.idea/
+
+## VS Code
+.vscode/
+
+## Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+bld/
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+[Ll]ogs/
+
+## Test results
+[Tt]est[Rr]esult*/
+[Bb]uild[Ll]og.*
+TestResult.xml
+coverage*/
+
+## Publish
+*.Publish.xml
+publish/
+
+## Firebase
+*-service-account.json
+*.p12
+firebase-*.json
+
+## Secrets
+appsettings.*.local.json
+secrets.json
+**/ServiceAccounts/
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Misc
+*.swp
+*.tmp
+*.bak

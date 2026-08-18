@@ -1,0 +1,59 @@
+@model List<SolicitacaoViewModel>
+@{
+    ViewData["Title"] = "Minhas Solicitacoes";
+    int pagina = ViewBag.Pagina ?? 1;
+    int total = ViewBag.TotalItens ?? 0;
+    int tamanhoPagina = ViewBag.TamanhoPagina ?? 10;
+    int totalPaginas = total > 0 ? (int)Math.Ceiling((double)total / tamanhoPagina) : 0;
+}
+
+<h1>Minhas Solicitacoes</h1>
+
+@if (Model.Any())
+{
+    <div class="tabela-container">
+        <table class="tabela">
+            <thead>
+                <tr><th>Produto</th><th>Quantidade</th><th>Status</th><th>Data</th><th>Acoes</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var s in Model)
+                {
+                    <tr>
+                        <td>@s.ProdutoNome</td>
+                        <td>@s.Quantidade</td>
+                        <td><span class="badge badge-info">@s.StatusDescricao</span></td>
+                        <td>@s.CriadoEm.ToString("dd/MM/yyyy")</td>
+                        <td>
+                            @if (s.StatusDescricao == "Pendente" || s.StatusDescricao == "Reservada")
+                            {
+                                <form asp-controller="Solicitacoes" asp-action="Cancelar" method="post" style="display:inline;">
+                                    <input type="hidden" name="id" value="@s.Id" />
+                                    <button type="submit" class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.8rem;">Cancelar</button>
+                                </form>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <nav class="paginacao">
+        @if (pagina > 1)
+        {
+            <a asp-action="MinhasSolicitacoes" asp-route-pagina="@(pagina - 1)">Anterior</a>
+        }
+        <span>Pagina @pagina de @totalPaginas</span>
+        @if (pagina < totalPaginas)
+        {
+            <a asp-action="MinhasSolicitacoes" asp-route-pagina="@(pagina + 1)">Proximo</a>
+        }
+    </nav>
+}
+else
+{
+    <div class="alerta alerta-vazio">
+        <p>Nenhuma solicitacao encontrada.</p>
+    </div>
+}

@@ -1,0 +1,73 @@
+@model ProdutoDetalhesViewModel
+@{
+    ViewData["Title"] = Model.Nome;
+}
+
+<nav class="breadcrumb">
+    <a asp-controller="Produtos" asp-action="Index">Catalogo</a>
+    <span> / </span>
+    <span>@Model.Nome</span>
+</nav>
+
+<div class="produto-detalhes">
+    <div class="detalhes-imagem">
+        @if (!string.IsNullOrEmpty(Model.ImagemUrl))
+        {
+            <img src="@Model.ImagemUrl" alt="@Model.Nome" />
+        }
+        else
+        {
+            <div class="produto-sem-imagem-grande">Sem imagem</div>
+        }
+    </div>
+
+    <div class="detalhes-info">
+        <span class="produto-categoria">@Model.CategoriaDescricao</span>
+        <h1>@Model.Nome</h1>
+
+        <div class="produto-precos-detalhes">
+            <span class="preco-original">R$ @Model.PrecoOriginal.ToString("F2")</span>
+            <span class="preco-promocional">R$ @Model.PrecoPromocional.ToString("F2")</span>
+            @if (Model.PercentualDesconto > 0)
+            {
+                <span class="desconto">-@Model.PercentualDesconto%</span>
+            }
+        </div>
+
+        @if (Model.PercentualDesconto > 0)
+        {
+            <p class="economia">
+                Voce economiza <strong>R$ @Model.Economia.ToString("F2")</strong>
+            </p>
+        }
+
+        <p class="disponibilidade">@Model.TextoDisponibilidade</p>
+
+        <div class="produto-tags-detalhes">
+            @if (Model.EhVegano)
+            {
+                <span class="tag tag-vegano">Vegano</span>
+            }
+            @if (Model.EhSemGluten)
+            {
+                <span class="tag tag-gluten">Sem Gluten</span>
+            }
+            @if (Model.EhSemLactose)
+            {
+                <span class="tag tag-lactose">Sem Lactose</span>
+            }
+        </div>
+
+        <div class="detalhes-extra">
+            <p><strong>Validade:</strong> @Model.DataLimite.ToString("dd/MM/yyyy")</p>
+        </div>
+
+        @if (!string.IsNullOrEmpty(Model.Descricao))
+        {
+            <div class="detalhes-descricao">
+                <h2>Descricao</h2>
+                <p>@Model.Descricao</p>
+            </div>
+        }
+    </div>
+</div>
