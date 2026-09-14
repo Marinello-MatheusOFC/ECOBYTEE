@@ -1,0 +1,44 @@
+@model List<SolicitacaoViewModel>
+@{
+    ViewData["Title"] = "Solicitacoes do Estabelecimento";
+    int pagina = ViewBag.Pagina ?? 1;
+}
+
+<h1>Solicitacoes</h1>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alerta alerta-sucesso">@TempData["Sucesso"]</div>
+}
+@if (TempData["Erro"] != null)
+{
+    <div class="alerta alerta-erro">@TempData["Erro"]</div>
+}
+
+<div class="tabela-container">
+    <table class="tabela">
+        <thead>
+            <tr><th>Id</th><th>Quantidade</th><th>Status</th><th>Criada Em</th><th>Acoes</th></tr>
+        </thead>
+        <tbody>
+            @foreach (var s in Model)
+            {
+                <tr>
+                    <td>@s.Id</td>
+                    <td>@s.Quantidade</td>
+                    <td>@s.Status</td>
+                    <td>@s.CriadoEm.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td>
+                        @if (s.Status == StatusSolicitacao.Pendente)
+                        {
+                            <form asp-controller="Solicitacoes" asp-action="Confirmar" asp-route-id="@s.Id" method="post" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-primary" style="padding:0.2rem 0.5rem;font-size:0.8rem;">Confirmar Retirada</button>
+                            </form>
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

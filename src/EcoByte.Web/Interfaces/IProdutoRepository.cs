@@ -21,4 +21,12 @@ public interface IProdutoRepository
         bool? ehSemLactose);
 
     Task<Produto?> ObterPorIdAsync(string id);
+
+    Task<string> CriarAsync(Produto produto);
+
+    Task AtualizarAsync(Produto produto);
+
+    Task<List<Produto>> ObterPorEstabelecimentoAsync(string estabelecimentoId, int limite, int offset);
+
+    Task<int> ContarPorEstabelecimentoAsync(string estabelecimentoId);
 }

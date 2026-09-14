@@ -16,6 +16,7 @@
         }
 
         <form asp-controller="Conta" asp-action="Login" method="post">
+            @Html.AntiForgeryToken()
             <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
 
             <div class="form-group">

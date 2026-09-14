@@ -126,4 +126,43 @@ public class ProdutoRepository : IProdutoRepository
 
         return snapshot.Exists ? snapshot.ConvertTo<Produto>() : null;
     }
+
+    public async Task<string> CriarAsync(Produto produto)
+    {
+        var docRef = await ObterColecao().AddAsync(produto);
+        produto.Id = docRef.Id;
+        return docRef.Id;
+    }
+
+    public async Task AtualizarAsync(Produto produto)
+    {
+        if (_db is null)
+            throw new FirestoreNotConfiguredException();
+
+        var docRef = _db.Collection(ColecaoProdutos).Document(produto.Id!);
+        produto.AtualizadoEm = Timestamp.FromDateTime(DateTime.UtcNow);
+        await docRef.SetAsync(produto, SetOptions.MergeAll);
+    }
+
+    public async Task<List<Produto>> ObterPorEstabelecimentoAsync(
+        string estabelecimentoId, int limite, int offset)
+    {
+        var snapshot = await ObterColecao()
+            .WhereEqualTo("estabelecimentoId", estabelecimentoId)
+            .OrderByDescending("criadoEm")
+            .Offset(offset)
+            .Limit(limite)
+            .GetSnapshotAsync();
+
+        return snapshot.Documents.Select(doc => doc.ConvertTo<Produto>()).ToList();
+    }
+
+    public async Task<int> ContarPorEstabelecimentoAsync(string estabelecimentoId)
+    {
+        var snapshot = await ObterColecao()
+            .WhereEqualTo("estabelecimentoId", estabelecimentoId)
+            .GetSnapshotAsync();
+
+        return snapshot.Count;
+    }
 }

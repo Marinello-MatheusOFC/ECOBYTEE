@@ -2,24 +2,31 @@ namespace EcoByte.Web.Controllers;
 
 using EcoByte.Web.Exceptions;
 using EcoByte.Web.Interfaces;
+using EcoByte.Web.Security;
 using EcoByte.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(Policy = AuthPolicies.Autenticado)]
 public class SolicitacoesController : Controller
 {
     private readonly ISolicitacaoService _solicitacaoService;
+    private readonly IEstabelecimentoService _estabelecimentoService;
 
-    public SolicitacoesController(ISolicitacaoService solicitacaoService)
+    public SolicitacoesController(
+        ISolicitacaoService solicitacaoService,
+        IEstabelecimentoService estabelecimentoService)
     {
         _solicitacaoService = solicitacaoService;
+        _estabelecimentoService = estabelecimentoService;
     }
 
     [HttpPost]
+    [Authorize(Policy = AuthPolicies.Consumidor)]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Criar(string produtoId, int quantidade)
     {
-        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var uid = User.FindFirst(AuthClaimTypes.Uid)?.Value;
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
         try
@@ -43,11 +50,14 @@ public class SolicitacoesController : Controller
     {
         if (string.IsNullOrWhiteSpace(id)) return NotFound();
 
-        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var uid = User.FindFirst(AuthClaimTypes.Uid)?.Value;
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
         var solicitacao = await _solicitacaoService.ObterPorIdAsync(id);
         if (solicitacao is null) return NotFound();
+
+        if (!await PermiteVisualizarAsync(solicitacao, uid))
+            return Forbid();
 
         return View(new SolicitacaoViewModel
         {
@@ -58,9 +68,10 @@ public class SolicitacoesController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Cancelar(string id)
     {
-        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var uid = User.FindFirst(AuthClaimTypes.Uid)?.Value;
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
         try
@@ -74,5 +85,20 @@ public class SolicitacoesController : Controller
         }
 
         return RedirectToAction("MinhasSolicitacoes", "Consumidor");
+    }
+
+    private async Task<bool> PermiteVisualizarAsync(
+        EcoByte.Web.Models.Solicitacao solicitacao, string uid)
+    {
+        if (solicitacao.ConsumidorId == uid)
+            return true;
+
+        if (string.IsNullOrWhiteSpace(solicitacao.EstabelecimentoId))
+            return false;
+
+        var estabelecimento = await _estabelecimentoService
+            .ObterPorIdAsync(solicitacao.EstabelecimentoId);
+
+        return estabelecimento?.UsuarioResponsavelId == uid;
     }
 }

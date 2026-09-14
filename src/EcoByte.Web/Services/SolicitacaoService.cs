@@ -12,15 +12,18 @@ public class SolicitacaoService : ISolicitacaoService
 {
     private readonly ISolicitacaoRepository _repository;
     private readonly IProdutoRepository _produtoRepository;
+    private readonly IEstabelecimentoRepository _estabelecimentoRepository;
     private readonly ILogService _logService;
 
     public SolicitacaoService(
         ISolicitacaoRepository repository,
         IProdutoRepository produtoRepository,
+        IEstabelecimentoRepository estabelecimentoRepository,
         ILogService logService)
     {
         _repository = repository;
         _produtoRepository = produtoRepository;
+        _estabelecimentoRepository = estabelecimentoRepository;
         _logService = logService;
     }
 
@@ -101,6 +104,10 @@ public class SolicitacaoService : ISolicitacaoService
         if (solicitacao.ConsumidorId != usuarioUid)
             throw new UnauthorizedAccessException("Operacao nao permitida.");
 
+        if (solicitacao.Status == StatusSolicitacao.Cancelada.ToString()
+            || solicitacao.Status == StatusSolicitacao.Concluida.ToString())
+            throw new InvalidOperationException("Solicitacao nao pode ser cancelada neste estado.");
+
         solicitacao.Status = StatusSolicitacao.Cancelada.ToString();
         solicitacao.CanceladoEm = Timestamp.FromDateTime(DateTime.UtcNow);
         await _repository.AtualizarAsync(solicitacao);
@@ -112,10 +119,28 @@ public class SolicitacaoService : ISolicitacaoService
         var solicitacao = await _repository.ObterPorIdAsync(solicitacaoId)
             ?? throw new KeyNotFoundException("Solicitacao nao encontrada.");
 
+        await ValidarProprietarioEstabelecimentoAsync(solicitacao, usuarioUid);
+
+        if (solicitacao.Status == StatusSolicitacao.Cancelada.ToString()
+            || solicitacao.Status == StatusSolicitacao.Concluida.ToString())
+            throw new InvalidOperationException("Solicitacao nao pode ser concluida neste estado.");
+
         solicitacao.Status = StatusSolicitacao.Concluida.ToString();
         solicitacao.ConcluidoEm = Timestamp.FromDateTime(DateTime.UtcNow);
         await _repository.AtualizarAsync(solicitacao);
         await _logService.RegistrarAsync(usuarioUid, "Concluir", "Solicitacao", solicitacaoId, "Sucesso");
+    }
+
+    private async Task ValidarProprietarioEstabelecimentoAsync(Solicitacao solicitacao, string usuarioUid)
+    {
+        if (string.IsNullOrWhiteSpace(solicitacao.EstabelecimentoId))
+            throw new UnauthorizedAccessException("Operacao nao permitida.");
+
+        var estabelecimento = await _estabelecimentoRepository.ObterPorIdAsync(solicitacao.EstabelecimentoId)
+            ?? throw new UnauthorizedAccessException("Operacao nao permitida.");
+
+        if (estabelecimento.UsuarioResponsavelId != usuarioUid)
+            throw new UnauthorizedAccessException("Operacao nao permitida.");
     }
 
     private static SolicitacaoViewModel MapearParaViewModel(Solicitacao s)

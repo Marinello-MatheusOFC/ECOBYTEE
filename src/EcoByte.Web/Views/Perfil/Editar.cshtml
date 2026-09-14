@@ -7,6 +7,7 @@
 
 <div class="form-card">
     <form asp-action="Editar" method="post">
+        @Html.AntiForgeryToken()
         <div class="form-group">
             <label asp-for="Nome"></label>
             <input asp-for="Nome" />

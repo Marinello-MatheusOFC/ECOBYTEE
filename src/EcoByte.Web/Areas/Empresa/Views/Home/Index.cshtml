@@ -1,0 +1,21 @@
+@{
+    ViewData["Title"] = "Painel da Empresa";
+}
+
+<h1>Painel da Empresa</h1>
+<p style="color:var(--texto-secundario);">Gerencie seu estabelecimento, produtos e retiradas.</p>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alerta alerta-sucesso">@TempData["Sucesso"]</div>
+}
+@if (TempData["Erro"] != null)
+{
+    <div class="alerta alerta-erro">@TempData["Erro"]</div>
+}
+
+<div style="display:flex;gap:1rem;flex-wrap:wrap;margin-top:1.5rem;">
+    <a asp-controller="Estabelecimentos" asp-action="Index" class="btn btn-primary">Meu Estabelecimento</a>
+    <a asp-controller="Produtos" asp-action="Index" class="btn btn-primary">Meus Produtos</a>
+    <a asp-controller="Solicitacoes" asp-action="Index" class="btn btn-primary">Solicitacoes</a>
+</div>

@@ -20,20 +20,30 @@ public class UsuarioRepository : IUsuarioRepository
 
     public async Task<Usuario?> ObterPorUidAsync(string uid)
     {
-        var colecao = ObterColecao();
-        var snapshot = await colecao
+        if (_db is null) throw new FirestoreNotConfiguredException();
+
+        var docRef = _db.Collection(Colecao).Document(uid);
+        var snapshot = await docRef.GetSnapshotAsync();
+
+        if (snapshot.Exists)
+            return snapshot.ConvertTo<Usuario>();
+
+        var colecao = _db.Collection(Colecao);
+        var busca = await colecao
             .WhereEqualTo("uid", uid)
             .Limit(1)
             .GetSnapshotAsync();
 
-        return snapshot.Documents.FirstOrDefault()?.ConvertTo<Usuario>();
+        return busca.Documents.FirstOrDefault()?.ConvertTo<Usuario>();
     }
 
     public async Task<Usuario> CriarAsync(Usuario usuario)
     {
-        var colecao = ObterColecao();
-        var docRef = await colecao.AddAsync(usuario);
-        usuario.Id = docRef.Id;
+        if (_db is null) throw new FirestoreNotConfiguredException();
+
+        var docRef = _db.Collection(Colecao).Document(usuario.Uid);
+        await docRef.SetAsync(usuario, SetOptions.MergeAll);
+        usuario.Id = usuario.Uid;
         return usuario;
     }
 

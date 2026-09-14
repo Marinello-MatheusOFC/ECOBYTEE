@@ -1,0 +1,23 @@
+@model Estabelecimento
+@{
+    ViewData["Title"] = "Meu Estabelecimento";
+}
+
+<h1>Meu Estabelecimento</h1>
+
+@if (TempData["Sucesso"] != null)
+{
+    <div class="alerta alerta-sucesso">@TempData["Sucesso"]</div>
+}
+
+<div class="form-card">
+    <p><strong>Nome Fantasia:</strong> @Model.NomeFantasia</p>
+    <p><strong>Razao Social:</strong> @Model.RazaoSocial</p>
+    <p><strong>Telefone:</strong> @Model.Telefone</p>
+    <p><strong>Email:</strong> @Model.Email</p>
+    <p><strong>Endereco:</strong> @Model.Endereco</p>
+    <p><strong>Descricao:</strong> @Model.Descricao</p>
+    <p><strong>Status:</strong> @(Model.Aprovado ? "Aprovado" : "Aguardando aprovacao")</p>
+
+    <a asp-action="Editar" class="btn btn-primary">Editar</a>
+</div>

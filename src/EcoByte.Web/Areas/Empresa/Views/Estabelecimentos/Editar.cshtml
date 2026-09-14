@@ -1,0 +1,48 @@
+@model EstabelecimentoViewModel
+@{
+    ViewData["Title"] = "Editar Estabelecimento";
+}
+
+<h1>Editar Estabelecimento</h1>
+
+<div class="form-card">
+    @if (ViewData.ModelState.ErrorCount > 0)
+    {
+        <div class="alerta alerta-erro">@Html.ValidationSummary()</div>
+    }
+
+    <form asp-controller="Estabelecimentos" asp-action="Editar" method="post">
+        @Html.AntiForgeryToken()
+        <input type="hidden" asp-for="Id" />
+        <div class="form-group">
+            <label asp-for="NomeFantasia"></label>
+            <input asp-for="NomeFantasia" />
+            <span asp-validation-for="NomeFantasia"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="RazaoSocial"></label>
+            <input asp-for="RazaoSocial" />
+        </div>
+        <div class="form-group">
+            <label asp-for="Telefone"></label>
+            <input asp-for="Telefone" />
+            <span asp-validation-for="Telefone"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Email"></label>
+            <input asp-for="Email" type="email" />
+            <span asp-validation-for="Email"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Endereco"></label>
+            <input asp-for="Endereco" />
+            <span asp-validation-for="Endereco"></span>
+        </div>
+        <div class="form-group">
+            <label asp-for="Descricao"></label>
+            <textarea asp-for="Descricao"></textarea>
+        </div>
+        <button type="submit" class="btn btn-primary">Salvar</button>
+        <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>

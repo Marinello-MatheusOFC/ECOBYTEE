@@ -2,11 +2,12 @@ namespace EcoByte.Web.Controllers;
 
 using EcoByte.Web.Exceptions;
 using EcoByte.Web.Interfaces;
+using EcoByte.Web.Security;
 using EcoByte.Web.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
-[Authorize]
+[Authorize(Policy = AuthPolicies.Consumidor)]
 public class ConsumidorController : Controller
 {
     private readonly ISolicitacaoService _solicitacaoService;
@@ -25,7 +26,7 @@ public class ConsumidorController : Controller
 
     public async Task<IActionResult> Index()
     {
-        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var uid = User.FindFirst(AuthClaimTypes.Uid)?.Value;
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
         try
@@ -48,7 +49,7 @@ public class ConsumidorController : Controller
 
     public async Task<IActionResult> MinhasSolicitacoes(int pagina = 1)
     {
-        var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var uid = User.FindFirst(AuthClaimTypes.Uid)?.Value;
         if (string.IsNullOrEmpty(uid)) return Unauthorized();
 
         var solicitacoes = await _solicitacaoService.ObterPorConsumidorAsync(uid, pagina, 10);

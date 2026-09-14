@@ -53,6 +53,7 @@ public class ProdutosController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProdutoFormularioViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
@@ -69,13 +70,15 @@ public class ProdutosController : Controller
                 DataLimite = Timestamp.FromDateTime(model.DataLimite),
                 ImagemUrl = model.ImagemUrl,
                 Categoria = model.Categoria.ToFirestoreString(),
-                Status = StatusProduto.Rascunho.ToFirestoreString(),
+                Status = StatusProduto.Disponivel.ToFirestoreString(),
                 EhVegano = model.EhVegano,
                 EhSemGluten = model.EhSemGluten,
                 EhSemLactose = model.EhSemLactose,
                 EstabelecimentoId = string.Empty,
                 CriadoEm = Timestamp.FromDateTime(DateTime.UtcNow)
             };
+
+            await _produtoRepository.CriarAsync(produto);
 
             TempData["Sucesso"] = "Produto criado com sucesso!";
             return RedirectToAction(nameof(Index));
@@ -89,7 +92,7 @@ public class ProdutosController : Controller
 
     public async Task<IActionResult> Edit(string id)
     {
-        var produto = await _produtoService.ObterDetalhesAsync(id);
+        var produto = await ObterProdutoOuNulo(id);
         if (produto is null) return NotFound();
 
         var model = new ProdutoFormularioViewModel
@@ -97,12 +100,12 @@ public class ProdutosController : Controller
             Id = produto.Id,
             Nome = produto.Nome,
             Descricao = produto.Descricao,
-            PrecoOriginal = produto.PrecoOriginal,
-            PrecoPromocional = produto.PrecoPromocional,
+            PrecoOriginal = ProdutoService.CentavosParaDecimal(produto.PrecoOriginalCentavos),
+            PrecoPromocional = ProdutoService.CentavosParaDecimal(produto.PrecoPromocionalCentavos),
             QuantidadeDisponivel = produto.QuantidadeDisponivel,
-            DataLimite = produto.DataLimite,
+            DataLimite = produto.DataLimite?.ToDateTime() ?? DateTime.Now,
             ImagemUrl = produto.ImagemUrl,
-            Categoria = produto.Categoria,
+            Categoria = EnumFirestoreExtensions.ParseCategoria(produto.Categoria) ?? CategoriaProduto.Outros,
             EhVegano = produto.EhVegano,
             EhSemGluten = produto.EhSemGluten,
             EhSemLactose = produto.EhSemLactose
@@ -112,9 +115,27 @@ public class ProdutosController : Controller
     }
 
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string id, ProdutoFormularioViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
+
+        var produto = await ObterProdutoOuNulo(id);
+        if (produto is null) return NotFound();
+
+        produto.Nome = model.Nome;
+        produto.Descricao = model.Descricao;
+        produto.PrecoOriginalCentavos = ProdutoService.DecimalParaCentavos(model.PrecoOriginal);
+        produto.PrecoPromocionalCentavos = ProdutoService.DecimalParaCentavos(model.PrecoPromocional);
+        produto.QuantidadeDisponivel = model.QuantidadeDisponivel;
+        produto.DataLimite = Timestamp.FromDateTime(model.DataLimite);
+        produto.ImagemUrl = model.ImagemUrl;
+        produto.Categoria = model.Categoria.ToFirestoreString();
+        produto.EhVegano = model.EhVegano;
+        produto.EhSemGluten = model.EhSemGluten;
+        produto.EhSemLactose = model.EhSemLactose;
+
+        await _produtoRepository.AtualizarAsync(produto);
 
         TempData["Sucesso"] = "Produto atualizado com sucesso!";
         return RedirectToAction(nameof(Index));
@@ -128,9 +149,29 @@ public class ProdutosController : Controller
     }
 
     [HttpPost, ActionName("Delete")]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(string id)
     {
+        var produto = await ObterProdutoOuNulo(id);
+        if (produto is not null)
+        {
+            produto.Status = StatusProduto.Desativado.ToFirestoreString();
+            await _produtoRepository.AtualizarAsync(produto);
+        }
+
         TempData["Sucesso"] = "Produto desativado.";
         return RedirectToAction(nameof(Index));
+    }
+
+    private async Task<Models.Produto?> ObterProdutoOuNulo(string id)
+    {
+        try
+        {
+            return await _produtoRepository.ObterPorIdAsync(id);
+        }
+        catch (FirestoreNotConfiguredException)
+        {
+            return null;
+        }
     }
 }

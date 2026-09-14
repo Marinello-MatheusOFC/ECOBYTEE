@@ -28,6 +28,7 @@
                             @if (s.StatusDescricao == "Pendente" || s.StatusDescricao == "Reservada")
                             {
                                 <form asp-controller="Solicitacoes" asp-action="Cancelar" method="post" style="display:inline;">
+                                    @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@s.Id" />
                                     <button type="submit" class="btn btn-danger" style="padding:0.2rem 0.5rem;font-size:0.8rem;">Cancelar</button>
                                 </form>

@@ -13,6 +13,7 @@ public class SolicitacaoServiceTests
 {
     private readonly Mock<ISolicitacaoRepository> _solicitacaoRepo;
     private readonly Mock<IProdutoRepository> _produtoRepo;
+    private readonly Mock<IEstabelecimentoRepository> _estabelecimentoRepo;
     private readonly Mock<ILogService> _logService;
     private readonly SolicitacaoService _service;
 
@@ -20,10 +21,12 @@ public class SolicitacaoServiceTests
     {
         _solicitacaoRepo = new Mock<ISolicitacaoRepository>();
         _produtoRepo = new Mock<IProdutoRepository>();
+        _estabelecimentoRepo = new Mock<IEstabelecimentoRepository>();
         _logService = new Mock<ILogService>();
         _service = new SolicitacaoService(
             _solicitacaoRepo.Object,
             _produtoRepo.Object,
+            _estabelecimentoRepo.Object,
             _logService.Object);
     }
 

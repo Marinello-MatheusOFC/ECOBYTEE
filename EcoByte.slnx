@@ -1,8 +1,5 @@
 <Solution>
-  <Folder Name="/src/">
-    <Project Path="src/EcoByte.Web/EcoByte.Web.csproj" />
-  </Folder>
-  <Folder Name="/tests/">
-    <Project Path="tests/EcoByte.Tests/EcoByte.Tests.csproj" />
-  </Folder>
+  <Project Path="src/EcoByte.Web/EcoByte.Web.csproj" />
+  <Project Path="tests/EcoByte.Tests/EcoByte.Tests.csproj" />
+  <Project Path="tests/EcoByte.IntegrationTests/EcoByte.IntegrationTests.csproj" />
 </Solution>

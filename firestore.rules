@@ -1,0 +1,115 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===== Funções utilitárias =====
+    function logado() {
+      return request.auth != null;
+    }
+
+    function perfilDoUid(uid) {
+      return get(/databases/$(database)/documents/usuarios/$(uid)).data.perfil;
+    }
+
+    function isAdmin() {
+      return logado() && perfilDoUid(request.auth.uid) == 'Administrador';
+    }
+
+    function isParceiro() {
+      return logado() && perfilDoUid(request.auth.uid) == 'Parceiro';
+    }
+
+    function isConsumidor() {
+      return logado() && perfilDoUid(request.auth.uid) == 'Consumidor';
+    }
+
+    function isOng() {
+      return logado() && perfilDoUid(request.auth.uid) == 'Ong';
+    }
+
+    function ehDonoEstabelecimento(estabelecimentoId) {
+      return isParceiro()
+        && estabelecimentoId != null
+        && estabelecimentoId != ''
+        && get(/databases/$(database)/documents/estabelecimentos/$(estabelecimentoId)).data.usuarioResponsavelId == request.auth.uid;
+    }
+
+    // ===== usuários (doc id = UID) =====
+    match /usuarios/{uid} {
+      allow read: if logado() && (uid == request.auth.uid || isAdmin());
+      allow create: if logado()
+        && uid == request.auth.uid
+        && request.resource.data.uid == uid
+        && request.resource.data.perfil != 'Administrador';
+      allow update: if logado()
+        && (uid == request.auth.uid || isAdmin())
+        && request.resource.data.uid == uid
+        && (isAdmin()
+            || (request.resource.data.perfil != 'Administrador'
+                && request.resource.data.ativo == resource.data.ativo));
+      allow delete: if isAdmin();
+    }
+
+    // ===== conquistas por usuário (subcoleção; concedidas pelo Admin SDK) =====
+    match /usuarios/{uid}/conquistas/{conquistaId} {
+      allow read: if logado() && (uid == request.auth.uid || isAdmin());
+      allow write: if false;
+    }
+
+    // ===== estabelecimentos =====
+    match /estabelecimentos/{estabelecimentoId} {
+      allow read: if logado();
+      allow create: if isParceiro()
+        && request.resource.data.usuarioResponsavelId == request.auth.uid
+        && request.resource.data.aprovado == false
+        && request.resource.data.ativo == true;
+      allow update: if isAdmin()
+        || (isParceiro()
+            && resource.data.usuarioResponsavelId == request.auth.uid
+            && request.resource.data.usuarioResponsavelId == request.auth.uid
+            && request.resource.data.aprovado == resource.data.aprovado);
+      allow delete: if isAdmin();
+    }
+
+    // ===== produtos (catálogo público) =====
+    match /produtos/{produtoId} {
+      allow read: if true;
+      allow create: if isAdmin() || ehDonoEstabelecimento(request.resource.data.estabelecimentoId);
+      allow update: if isAdmin()
+        || (ehDonoEstabelecimento(resource.data.estabelecimentoId)
+            && request.resource.data.estabelecimentoId == resource.data.estabelecimentoId);
+      allow delete: if isAdmin();
+    }
+
+    // ===== solicitacoes =====
+    match /solicitacoes/{solicitacaoId} {
+      function isDoConsumidor() {
+        return logado() && resource.data.consumidorId == request.auth.uid;
+      }
+      function isDoEstabelecimento() {
+        return ehDonoEstabelecimento(resource.data.estabelecimentoId);
+      }
+      allow read: if logado() && (isDoConsumidor() || isDoEstabelecimento() || isAdmin());
+      allow create: if isConsumidor()
+        && request.resource.data.consumidorId == request.auth.uid
+        && request.resource.data.quantidade > 0
+        && request.resource.data.status == 'Pendente';
+      allow update: if isAdmin()
+        || (isDoEstabelecimento() && resource.data.status == 'Pendente');
+      allow delete: if false;
+    }
+
+    // ===== conquistas (catálogo) =====
+    match /conquistas/{conquistaId} {
+      allow read: if logado();
+      allow write: if isAdmin();
+    }
+
+    // ===== logs (somente Admin SDK) =====
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+  }
+}

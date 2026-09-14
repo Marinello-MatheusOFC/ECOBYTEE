@@ -1,7 +1,9 @@
 using EcoByte.Web.Firebase;
 using EcoByte.Web.Interfaces;
 using EcoByte.Web.Repositories;
+using EcoByte.Web.Security;
 using EcoByte.Web.Services;
+using FirebaseAdmin;
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -17,11 +19,28 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     {
         options.LoginPath = "/Conta/Login";
         options.LogoutPath = "/Conta/Logout";
-        options.AccessDeniedPath = "/Shared/Error/403";
+        options.AccessDeniedPath = "/Conta/AcessoNegado";
         options.ExpireTimeSpan = TimeSpan.FromHours(24);
+        options.SlidingExpiration = false;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
     });
 
-builder.Services.AddAuthorization();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(AuthPolicies.Autenticado, policy => policy.RequireAuthenticatedUser());
+    options.AddPolicy(AuthPolicies.Consumidor, policy => policy.RequireRole(AuthPolicies.PerfilConsumidor));
+    options.AddPolicy(AuthPolicies.Parceiro, policy => policy.RequireRole(AuthPolicies.PerfilParceiro));
+    options.AddPolicy(AuthPolicies.Ong, policy => policy.RequireRole(AuthPolicies.PerfilOng));
+    options.AddPolicy(AuthPolicies.EmpresaOuOng, policy => policy.RequireRole(AuthPolicies.PerfilParceiro, AuthPolicies.PerfilOng));
+    options.AddPolicy(AuthPolicies.Administrador, policy => policy.RequireRole(AuthPolicies.PerfilAdministrador));
+});
+
+builder.Services.AddHttpClient("FirebaseAuth", client =>
+{
+    client.Timeout = TimeSpan.FromSeconds(20);
+});
 
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 builder.Services.AddScoped<IProdutoService, ProdutoService>();
@@ -35,6 +54,10 @@ builder.Services.AddScoped<IImpactoService, ImpactoService>();
 builder.Services.AddScoped<IConquistaService, ConquistaService>();
 builder.Services.AddScoped<ILogService, LogRepository>();
 
+builder.Services.AddScoped<IFirebaseTokenValidator, FirebaseAdminTokenValidator>();
+builder.Services.AddScoped<IAuthGateway, AuthGateway>();
+builder.Services.AddScoped<IAutenticacaoService, AutenticacaoService>();
+
 var firebaseSection = builder.Configuration.GetSection("Firebase");
 var firebaseEnabled = firebaseSection.GetValue<bool>("Enabled");
 
@@ -43,18 +66,38 @@ if (firebaseEnabled)
     var firebaseConfig = new FirebaseConfig();
     firebaseSection.Bind(firebaseConfig);
 
+    if (string.IsNullOrWhiteSpace(firebaseConfig.ProjectId))
+        throw new InvalidOperationException(
+            "Firebase.ProjectId e obrigatorio quando Firebase.Enabled = true.");
+
     if (firebaseConfig.UseEmulator)
     {
         Environment.SetEnvironmentVariable(
             "FIRESTORE_EMULATOR_HOST", firebaseConfig.EmulatorHost);
+        Environment.SetEnvironmentVariable(
+            "FIREBASE_AUTH_EMULATOR_HOST", firebaseConfig.AuthEmulatorHost);
     }
 
-    var firestoreDb = FirestoreDb.Create(firebaseConfig.ProjectId);
-    builder.Services.AddSingleton(firestoreDb);
     builder.Services.AddSingleton(firebaseConfig);
+
+    builder.Services.AddSingleton(FirestoreDb.Create(firebaseConfig.ProjectId));
+
+    try
+    {
+        FirebaseApp.Create(new AppOptions { ProjectId = firebaseConfig.ProjectId });
+    }
+    catch (Exception ex)
+    {
+        using var loggerFactory = LoggerFactory.Create(logging => logging.AddConsole());
+        var logger = loggerFactory.CreateLogger("EcoByte.Startup");
+        logger.LogWarning(
+            "Firebase Admin SDK nao foi inicializado. Validacao de ID tokens ficara indisponivel. Motivo: {Motivo}",
+            ex.Message);
+    }
 }
 else
 {
+    builder.Services.AddSingleton(new FirebaseConfig { Enabled = false });
     builder.Services.AddSingleton<FirestoreDb>(_ => null!);
 }
 

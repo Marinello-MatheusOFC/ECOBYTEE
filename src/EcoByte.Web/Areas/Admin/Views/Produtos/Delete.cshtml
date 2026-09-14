@@ -20,6 +20,7 @@
     </div>
 
     <form asp-controller="Produtos" asp-action="Delete" asp-route-id="@Model.Id" method="post">
+        @Html.AntiForgeryToken()
         <button type="submit" class="btn btn-danger">Confirmar Exclusao</button>
         <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
     </form>
