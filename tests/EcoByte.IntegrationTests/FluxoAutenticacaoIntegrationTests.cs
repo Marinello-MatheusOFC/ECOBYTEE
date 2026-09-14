@@ -6,19 +6,22 @@ using Microsoft.Extensions.DependencyInjection;
 
 public class FluxoAutenticacaoIntegrationTests
 {
+    private static FirebaseConfig CriarConfig()
+        => new()
+        {
+            Enabled = true,
+            ProjectId = AmbienteEmulador.Projeto,
+            ApiKey = "chave-do-emulador",
+            UseEmulator = true,
+            AuthEmulatorHost = AmbienteEmulador.HostAuth
+        };
+
     [SkippableFact]
     public async Task Registrar_Erautenticar_FluxoCompletoNoEmulador()
     {
-        EmuladorGuarda.SairSeNaoHabilitado();
+        EmuladorGuarda.Validar();
 
-        var config = new FirebaseConfig
-        {
-            Enabled = true,
-            ProjectId = "ecobyte-testes",
-            ApiKey = "chave-do-emulador",
-            UseEmulator = true,
-            AuthEmulatorHost = "127.0.0.1:9099"
-        };
+        var config = CriarConfig();
 
         var servicos = new ServiceCollection();
         servicos.AddLogging();
@@ -45,16 +48,9 @@ public class FluxoAutenticacaoIntegrationTests
     [SkippableFact]
     public async Task Autenticar_SenhaIncorreta_RetornaFalha()
     {
-        EmuladorGuarda.SairSeNaoHabilitado();
+        EmuladorGuarda.Validar();
 
-        var config = new FirebaseConfig
-        {
-            Enabled = true,
-            ProjectId = "ecobyte-testes",
-            ApiKey = "chave-do-emulador",
-            UseEmulator = true,
-            AuthEmulatorHost = "127.0.0.1:9099"
-        };
+        var config = CriarConfig();
 
         var servicos = new ServiceCollection();
         servicos.AddLogging();
@@ -64,9 +60,10 @@ public class FluxoAutenticacaoIntegrationTests
         var factory = provider.GetRequiredService<IHttpClientFactory>();
         var gateway = new AuthGateway(config, factory);
 
-        await gateway.RegistrarComSenhaAsync("senha-errada@exemplo.com", "Senha123!");
+        var email = $"integracao-{Guid.NewGuid():N}@exemplo.com";
+        await gateway.RegistrarComSenhaAsync(email, "Senha123!");
 
-        var login = await gateway.AutenticarComSenhaAsync("senha-errada@exemplo.com", "OutraSenha1");
+        var login = await gateway.AutenticarComSenhaAsync(email, "OutraSenha1");
 
         Assert.False(login.Sucesso);
         Assert.NotNull(login.Erro);

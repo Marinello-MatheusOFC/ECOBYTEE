@@ -1,0 +1,55 @@
+[debug] [2026-09-14T23:28:19.839Z] ----------------------------------------------------------------------
+[debug] [2026-09-14T23:28:19.841Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Etec\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start --project demo-ecobyte
+[debug] [2026-09-14T23:28:19.841Z] CLI Version:   15.30.1
+[debug] [2026-09-14T23:28:19.842Z] Platform:      win32
+[debug] [2026-09-14T23:28:19.842Z] Node Version:  v24.12.0
+[debug] [2026-09-14T23:28:19.842Z] Detected Agent: open_code
+[debug] [2026-09-14T23:28:19.842Z] Time:          Mon Sep 14 2026 20:28:19 GMT-0300 (Horário Padrão de Brasília)
+[debug] [2026-09-14T23:28:19.842Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-14T23:28:19.851Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-09-14T23:28:36.621Z] Object "/emulators/firestore" in "firebase.json" has unknown property: {"additionalProperty":"rules"}
+[debug] [2026-09-14T23:28:36.806Z] java version "25.0.1" 2025-10-21 LTS
+
+[debug] [2026-09-14T23:28:36.807Z] Java(TM) SE Runtime Environment (build 25.0.1+8-LTS-27)
+Java HotSpot(TM) 64-Bit Server VM (build 25.0.1+8-LTS-27, mixed mode, sharing)
+
+[debug] [2026-09-14T23:28:36.822Z] Parsed Java major version: 25
+[info] i  emulators: Starting emulators: auth, firestore, storage {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, firestore, storage"}}
+[info] i  emulators: Detected demo project ID "demo-ecobyte", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail. {"metadata":{"emulator":{"name":"hub"},"message":"Detected demo project ID \"demo-ecobyte\", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail."}}
+[debug] [2026-09-14T23:28:36.832Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-09-14T23:28:36.832Z] assigned listening specs for emulators {"user":{"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-09-14T23:28:36.835Z] Write emulator hub locator at C:\Users\Etec\AppData\Local\Temp\hub-demo-ecobyte.json
+[warn] !  firestore: Cloud Firestore Emulator does not support multiple databases yet. {"metadata":{"emulator":{"name":"firestore"},"message":"Cloud Firestore Emulator does not support multiple databases yet."}}
+[warn] !  firestore: Did not find a Cloud Firestore rules file specified in a firebase.json config file. {"metadata":{"emulator":{"name":"firestore"},"message":"Did not find a Cloud Firestore rules file specified in a firebase.json config file."}}
+[warn] !  firestore: The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration. {"metadata":{"emulator":{"name":"firestore"},"message":"The emulator will default to allowing all reads and writes. Learn more about this option: https://firebase.google.com/docs/emulator-suite/install_and_configure#security_rules_configuration."}}
+[info] i  firestore: downloading cloud-firestore-emulator-v1.22.0.jar... {"metadata":{"emulator":{"name":"firestore"},"message":"downloading cloud-firestore-emulator-v1.22.0.jar..."}}
+[debug] [2026-09-14T23:28:36.844Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 
+[debug] [2026-09-14T23:28:37.182Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-09-14T23:28:37.182Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-09-14T23:28:37.442Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 200
+[debug] [2026-09-14T23:28:37.442Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar [stream]
+[debug] [2026-09-14T23:29:03.471Z] ----------------------------------------------------------------------
+[debug] [2026-09-14T23:29:03.473Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\Etec\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start --project demo-ecobyte
+[debug] [2026-09-14T23:29:03.473Z] CLI Version:   15.30.1
+[debug] [2026-09-14T23:29:03.473Z] Platform:      win32
+[debug] [2026-09-14T23:29:03.473Z] Node Version:  v24.12.0
+[debug] [2026-09-14T23:29:03.473Z] Detected Agent: open_code
+[debug] [2026-09-14T23:29:03.473Z] Time:          Mon Sep 14 2026 20:29:03 GMT-0300 (Horário Padrão de Brasília)
+[debug] [2026-09-14T23:29:03.473Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-09-14T23:29:04.406Z] java version "25.0.1" 2025-10-21 LTS
+Java(TM) SE Runtime Environment (build 25.0.1+8-LTS-27)
+Java HotSpot(TM) 64-Bit Server VM (build 25.0.1+8-LTS-27, mixed mode, sharing)
+
+[debug] [2026-09-14T23:29:04.416Z] Parsed Java major version: 25
+[info] i  emulators: Starting emulators: auth, firestore, storage {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: auth, firestore, storage"}}
+[info] i  emulators: Detected demo project ID "demo-ecobyte", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail. {"metadata":{"emulator":{"name":"hub"},"message":"Detected demo project ID \"demo-ecobyte\", emulated services will use a demo configuration and attempts to access non-emulated services for this project will fail."}}
+[debug] [2026-09-14T23:29:04.429Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-09-14T23:29:04.430Z] assigned listening specs for emulators {"user":{"auth":[{"address":"127.0.0.1","family":"IPv4","port":9099}],"firestore":[{"address":"127.0.0.1","family":"IPv4","port":8080}],"firestore.websocket":[{"address":"127.0.0.1","family":"IPv4","port":9150}],"storage":[{"address":"127.0.0.1","family":"IPv4","port":9199}],"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-09-14T23:29:04.434Z] Found emulator hub locator: {"version":"15.30.1","origins":["http://127.0.0.1:4400","http://[::1]:4400"],"pid":13004}
+[debug] [2026-09-14T23:29:04.434Z] Write emulator hub locator at C:\Users\Etec\AppData\Local\Temp\hub-demo-ecobyte.json
+[info] i  firestore: downloading cloud-firestore-emulator-v1.22.0.jar... {"metadata":{"emulator":{"name":"firestore"},"message":"downloading cloud-firestore-emulator-v1.22.0.jar..."}}
+[debug] [2026-09-14T23:29:04.453Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 
+[debug] [2026-09-14T23:29:04.959Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar 200
+[debug] [2026-09-14T23:29:04.959Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar [stream]

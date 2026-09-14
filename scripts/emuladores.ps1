@@ -1,5 +1,5 @@
 # EcoByte - Emuladores Firebase (Auth + Firestore + Storage)
-# Uso: scripts/emuladores.ps1 [-Seed] [-Import <diretorio>]
+# Uso: scripts/emuladores.ps1 [-Seed] [-Import <diretorio>] [-SomenteFirestore]
 #
 # Requisitos:
 #   - Node.js 18+ (https://nodejs.org)
@@ -8,40 +8,36 @@
 # Instalação do Firebase CLI (se ainda não tiver):
 #   npm install -g firebase-tools
 #
-# Certifique-se de estar num projeto Firebase (firebase.json + firestore.rules + storage.rules na raiz).
+# Projeto: usa prefixo "demo-" (demo-ecobyte) configurado em .firebaserc.
+# Projetos demo-* rodam SOMENTE no emulador e nunca contatam o backend real.
 
 param(
     [switch]$Seed,
     [string]$Import,
-
-    # Portas padrão (alinhadas com Program.cs / AuthEmulatorHost)
-    [int]$PortaAuth = 9099,
-    [int]$PortaFirestore = 8080,
-    [int]$PortaStorage = 9199
+    [switch]$SomenteFirestore
 )
 
 $ErrorActionPreference = 'Stop'
 Set-StrictMode -Version Latest
 
 $raiz = Split-Path -Parent $PSScriptRoot
-if (-not (Test-Path (Join-Path $raiz 'firebase.json'))) {
+$firebaseJson = Join-Path $raiz 'firebase.json'
+
+if (-not (Test-Path $firebaseJson)) {
     Write-Error "firebase.json nao encontrado em '$raiz'. Execute este script a partir da raiz do repositorio."
 }
 
-Write-Host "== EcoByte: iniciando emuladores Firebase ==" -ForegroundColor Cyan
+Write-Host "== EcoByte: iniciando emuladores Firebase (projeto demo-ecobyte) ==" -ForegroundColor Cyan
 
 # ---- Preflight: Node.js e Firebase CLI ----
-$node = (Get-Command node -ErrorAction SilentlyContinue)
-if (-not $node) {
+if (-not (Get-Command node -ErrorAction SilentlyContinue)) {
     Write-Host "Node.js nao instalado." -ForegroundColor Yellow
     Write-Host "Instale em: https://nodejs.org ou via winget:" -ForegroundColor Yellow
     Write-Host "  winget install OpenJS.NodeJS.LTS" -ForegroundColor Yellow
-    Write-Host "Depois:  npm install -g firebase-tools" -ForegroundColor Yellow
     exit 1
 }
 
-$firebase = (Get-Command firebase -ErrorAction SilentlyContinue)
-if (-not $firebase) {
+if (-not (Get-Command firebase -ErrorAction SilentlyContinue)) {
     Write-Host "Firebase CLI nao instalado." -ForegroundColor Yellow
     Write-Host "Instale com:" -ForegroundColor Yellow
     Write-Host "  npm install -g firebase-tools" -ForegroundColor Yellow
@@ -51,23 +47,23 @@ if (-not $firebase) {
 
 Write-Host ("Firebase CLI: " + (firebase --version).Trim()) -ForegroundColor Green
 
-# ---- Exige projectId em binário.config (emulador local usa localhost, sem credenciais) ----
-$argsBase = @('emulators:start')
+# ---- Argumentos do emulador ----
+$argsEmuladores = @()
+if ($SomenteFirestore) {
+    $argsEmuladores += '--only'
+    $argsEmuladores += 'firestore'
+}
+
+Write-Host "Portas: Auth=9099 Firestore=8080 Storage=9199 UI=4000" -ForegroundColor Green
+
+$comando = @('emulators:start', '--project', 'demo-ecobyte') + $argsEmuladores
 if ($Import) {
-    $argsBase = @('emulators:exec', "--import=$Import")
+    $comando = @('emulators:exec', '--project', 'demo-ecobyte', '--import', $Import) + $argsEmuladores
 }
-
-# Aviso sobre BLOQUEIO por credencial (usar emulador não exige login, mas o CLI cobra por padrão)
-$ghost = $env:FIREBASE_TOKEN -or (Test-Path (Join-Path $env:USERPROFILE '.config\configstore\firebase-tools.json'))
-if (-not $ghost) {
-    Write-Host "Dica: para usar o emulador sem login, exporte FIREBASE_TOKEN ou use 'firebase login'." -ForegroundColor DarkYellow
-}
-
-Write-Host ("Portas: Auth=$PortaAuth Firestore=$PortaFirestore Storage=$PortaStorage UI=4000") -ForegroundColor Green
 
 if ($Seed) {
     Write-Host "Seed: criando dados de demonstracao apos a subida..." -ForegroundColor Green
 }
 
 # ---- Subir emuladores (fica em foreground; Ctrl+C para encerrar) ----
-firebase @argsBase
+& firebase @comando

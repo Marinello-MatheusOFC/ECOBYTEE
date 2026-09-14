@@ -1,86 +1,116 @@
 =========================================================
-RESUMO DA FASE - AUTENTICACAO REAL (Firebase) - EcoByte
+RESUMO DO PROJETO - EcoByte - FASE DE AUTENTICACAO + EMULADORES
 =========================================================
 
+PARTE 1 - FASE DE AUTENTICACAO REAL (CONCLUIDA)
 ---------------------------------------------------------
-O QUE FOI FEITO
----------------------------------------------------------
-
 1. AUTENTICACAO REAL (Firebase)
-   - Login/Registro agora trocam email/senha por um ID token via
-     REST Identity Toolkit (AuthGateway), validado pelo Firebase
-     Admin SDK (FirebaseAdminTokenValidator). O UID e extraido
-     SOMENTE do token validado - nunca de dados enviados pelo cliente.
-   - AutenticacaoService orquestra o fluxo (login, registro).
-   - Cookie de sessao ASP.NET Core com claims (AuthClaimTypes:
-     Uid, Nome, Email, Perfil, EstabelecimentoId) gerados por
+   - Login/Registro trocam email/senha por ID token via REST
+     Identity Toolkit (AuthGateway), validado pelo Firebase
+     Admin SDK (FirebaseAdminTokenValidator).
+   - UID extraido SOMENTE do token validado.
+   - AutenticacaoService, SecretService? (nao - apenas)
+     AutenticacaoService orquestra o fluxo (login, registro).
+   - Cookie ASP.NET Core com claims (AuthClaimTypes:
+     Uid, Nome, Email, Perfil, EstabelecimentoId) via
      ClaimsIdentityFactory.
-   - Autorizacao por perfil via politicas (AuthPolicies):
-     Autenticado, Consumidor, Parceiro, Ong, EmpresaOuOng, Administrador.
-   - Onboarding para escolha de perfil apos primeiro login.
-   - Usuario documentado no Firestore com ID DO DOCUMENTO = UID
-     (fallback para documentos legados). Alinhado as conquistas
-     em usuarios/{uid}/conquistas.
+   - Politicas de autorizacao: Autenticado, Consumidor, Parceiro,
+     Ong, EmpresaOuOng, Administrador.
+   - Onboarding por perfil.
+   - Usuario salvo em usuarios/{uid} (fallback para legados).
 
-2. AUTORIZACAO E PROPRIEDADE DE RECURSOS
-   - SolicitacaoService valida o dono da solicitacao e o dono do
-     estabelecimento (CancelarAsync / ConfirmarRetiradaAsync).
-   - RetiradasController exige perfil Parceiro + estabelecimento proprio.
-   - ConsumidorController / SolicitacoesController com politicas por acao.
-   - Area Empresa criada (Estabelecimentos, Produtos CRUD,
-     Confirmar retiradas) - opera apenas sobre recursos proprios.
-   - CMS Admin restrito a Administradores; CRUD de produtos agora
-     PERSISTE de verdade (antes Editar/Excluir eram no-op).
+2. AUTORIZACAO E PROPRIEDADE
+   - SolicitacaoService valida dono da solicitacao/estabelecimento.
+   - Area Empresa (estabelecimentos, produtos, retiradas).
+   - CMS Admin protegido e persistente.
 
-3. REGRAS E INFRAESTRUTURA
-   - firestore.rules e storage.rules criados na raiz (nao existiam).
-   - firebase.json criado (emuladores Auth/Firestore/Storage/UI).
-   - scripts/emuladores.ps1 criado (preflight + subida dos emuladores).
-   - EcoByte.slnx criado (nao existia) para build/test da solucao.
+3. REGRAS E INFRA
+   - firestore.rules e storage.rules na raiz.
+   - firebase.json, scripts/emuladores.ps1, EcoByte.slnx.
+   - CSRF ([ValidateAntiForgeryToken]) em todos os POSTs.
 
-4. SEGURANCA (CSRF)
-   - Todos os POSTs tiveram [ValidateAntiForgeryToken]
-     (Controllers de todas as areas) + @Html.AntiForgeryToken()
-     nas Views correspondentes.
+4. TESTES
+   - Unitarios: 89/89 aprovados.
 
-5. TESTES E DOCUMENTACAO
-   - Suite unitaria: 72 -> 89 testes aprovados
-     (novos: AutenticacaoService, UsuarioService,
-     ClaimsIdentityFactory, FirebaseAdminTokenValidator).
-     SolicitacaoServiceTests ajustado ao novo construtor (4 mock).
-   - tests/EcoByte.IntegrationTests criado: 4 cenarios com skip
-     automatico quando o emulador nao esta disponivel.
-   - AGENTS.md atualizado (tecnologias, estrutura, regras).
-
+PARTE 2 - FASE ATUAL (EM ANDAMENTO)
 ---------------------------------------------------------
-VALIDACAO ATUAL
----------------------------------------------------------
-- dotnet build  (via EcoByte.slnx): 0 erros
-- dotnet test:  89/89 unitarios aprovados, 0 falhas
-- Testes de integracao: compilam e pulam (4 Ignorado)
-- Nenhum commit feito
+ETAPA 1 - ESTADO INICIAL ................. FEITA
+   - Branch main; commit ac56489 "1409" contem o trabalho da
+     fase anterior.
+   - Build: 0 erros; 89/89 unitarios; 4 integracao ignorados.
 
----------------------------------------------------------
-O QUE FALTA
----------------------------------------------------------
-1. INSTALAR O FIREBASE CLI (BLOQUEADO)
-   - npm install -g firebase-tools
-   - Rodar: scripts\emuladores.ps1
+ETAPA 2 - VALIDAR NODE/NPM/FIREBASE CLI ... FEITA
+   - Node v24.12.0, npm 11.6.2.
+   - Firebase CLI NAO estava instalado.
+   - Instalado via: npm install -g firebase-tools
+   - Validado: firebase --version -> 15.30.1
 
-2. EXECUTAR OS TESTES DE INTEGRACAO COM O EMULADOR
-   - $env:ECOBYTE_EXECUTA_TESTES_EMULADOR="1"
-   - dotnet test tests\EcoByte.IntegrationTests
-   - Isso tambem valida as regras firestore.rules/storage.rules.
+ETAPA 3 - AUDITAR CONFIGURACAO DOS EMULADORES ... FEITA (correcoes aplicadas)
+   - firebase.json: adicionado mapeamento das regras
+     (firestore.rules / storage.rules) no nivel raiz
+     (estavam aninhadas dentro de "emulators", o que o CLI
+     nao lia).
+   - Criado .firebaserc com projeto "demo-ecobyte"
+     (prefixo demo- garante emulador puro, sem contato com
+     producao).
+   - storage.rules: corrigido caminho do get() de Firestore
+     ($(database) -> (default)).
 
-3. MIGRACAO/DEDUPE DOS USUARIOS LEGADOS
-   - Consolidar documentos com id auto-gerado -> id = UID
-     (estrategia documentada, nao executada).
+     ATENCAO: $(database) NAO existe em Storage rules.
+   - EmuladorGuarda.cs: endurecido - quando habilitado, exige
+     hosts de emulador definidos e apontando para loopback
+     (127.0.0.1/localhost); caso contrario FALHA DE FORMA
+     SEGURA (nunca acessa producao).
+   - AmbienteEmulador.cs (novo): centraliza host/portas/projeto
+     usados pelos testes de integracao.
+   - FluxoAutenticacao/Firestore integration tests: usam a guarda
+     nova; emails unicos por teste.
 
-4. PENDENCIAS MENORES (documentadas)
-   - CMS Admin cria produtos com EstabelecimentoId vazio.
-   - Logout continua via GET (troca de estado em GET).
+ETAPA 4 - INICIAR EMULADORES ... EM ANDAMENTO (BLOQUEADO)
+   - Portas 9099/8080/9199/4000 livres (sem conflito).
+   - Emuladores iniciados em background (cmd.exe + firebase
+     emulators:start --project demo-ecobyte).
+   - Firestore Emulator precisa do jar
+     cloud-firestore-emulator-v1.22.0.jar (~137 MB),
+     baixado da primeira vez.
+   - Download do CLI travou/lento; iniciei download manual para
+     $HOME\.cache\firebase\emulators\
+   - DOWNLOAD ABORTADO PELO USUARIO em ~58,7 de 137 MB
+     (arquivo .tmp parcial).
 
-5. COMMIT
-   - Nada foi commitado. Revisar o diff e commitar usando os
-     codigos do AGENTS.md (feat/fix/test/docs/refactor).
+FALTA (proximo passo):
+   - Concluir download do jar (ou via CLI, ou manual):
+       Invoke-WebRequest -Uri "https://storage.googleapis.com/firebase-preview-drop/emulator/cloud-firestore-emulator-v1.22.0.jar" -OutFile "$HOME\.cache\firebase\emulators\cloud-firestore-emulator-v1.22.0.jar"
+     (e remover o .tmp ao concluir)
+   - Reiniciar os emuladores.
+   - Validar de fato os 4 testes de integracao (etapa 5).
+
+=========================================================
+FALTA (OREM DO PLANO DA FASE)
+=========================================================
+1. [EM ANDAMENTO] ETAPA 4 - subir emuladores de verdade.
+2. ETAPA 5  - executar os 4 testes de integracao (sem Skip).
+3. ETAPA 6  - ampliar testes de integracao (auth, perfis,
+              produtos, solicitacoes/retiradas, admin, regras
+              Firestore e Storage - cerca de 40 cenarios).
+4. ETAPA 7  - corrigir logout via GET -> POST + ValidateAntiForgeryToken
+              + formulario com token + testes.
+5. ETAPA 8  - exigir EstabelecimentoId valido na criacao de
+              produtos do CMS Admin (id vazio bloqueado, validar
+              no backend, evitar overposting) + testes.
+6. ETAPA 9  - transacao atomica de estoque (RunTransactionAsync)
+              no fluxo de solicitacao: reduzir estoque e criar
+              solicitacao atomica e consistente.
+7. ETAPA 10 - teste de concorrencia real no Emulator
+              (estoque=1, 2 consumidores simultaneos).
+8. ETAPA 11 - preparar migracao de usuarios legados com dry-run
+              (NAO executar a migracao real).
+9. ETAPA 12 - revisar firestore.rules/storage.rules com base nas
+              falhas reais dos testes.
+10. ETAPA 13 - validacao final completa (build + unit + integracao).
+11. ETAPA 14 - documentacao (AGENTS.md, docs/TCC.md).
+12. Relatorio final + sugestao de commits (SEM executar).
+
+REGRAS: sem commit/push, sem migracao em producao, sem publicar
+regras, sem deploy, sem credenciais reais.
 =========================================================

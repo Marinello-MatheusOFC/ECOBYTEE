@@ -5,14 +5,13 @@ public class FirestoreIntegrationTests
 {
     static FirestoreIntegrationTests()
     {
-        Environment.SetEnvironmentVariable("FIRESTORE_EMULATOR_HOST", "127.0.0.1:8080");
-        Environment.SetEnvironmentVariable("GOOGLE_CLOUD_PROJECT", "ecobyte-testes");
+        AmbienteEmulador.ConfigurarAmbienteSeguro();
     }
 
     private static FirestoreDb CriarDb()
     {
-        EmuladorGuarda.SairSeNaoHabilitado();
-        return FirestoreDb.Create("ecobyte-testes");
+        EmuladorGuarda.Validar();
+        return FirestoreDb.Create(AmbienteEmulador.Projeto);
     }
 
     [SkippableFact]
