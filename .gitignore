@@ -58,6 +58,12 @@ publish/
 *.p12
 firebase-*.json
 
+## Firebase Emulator (logs gerados localmente)
+firebase-debug.log
+firestore-debug.log
+*-debug.log
+*-debug.log.*
+
 ## Secrets
 appsettings.*.local.json
 secrets.json
