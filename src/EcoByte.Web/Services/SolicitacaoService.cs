@@ -58,6 +58,8 @@ public class SolicitacaoService : ISolicitacaoService
         if (produto.QuantidadeDisponivel == 0)
             produto.Status = StatusProduto.Esgotado.ToFirestoreString();
 
+        await _produtoRepository.AtualizarAsync(produto);
+
         await _logService.RegistrarAsync(consumidorId, "Criar", "Solicitacao", id, "Sucesso");
 
         return id;
