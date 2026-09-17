@@ -3,33 +3,53 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // ===== Avatar do usuário (imagem) =====
-    match /usuarios/{uid}/avatar.png {
-      allow read: if request.auth != null;
-      allow write: if request.auth != null
-        && request.auth.uid == uid
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+    // ===== Funções utilitárias =====
+    function logado() {
+      return request.auth != null;
     }
 
-    // ===== Imagens de estabelecimentos =====
-    match /estabelecimentos/{estabelecimentoId}/imagens/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*')
+    function ehImagem() {
+      return request.resource.contentType.matches('image/.*');
+    }
+
+    function dentroDoLimite() {
+      return request.resource.size < 5 * 1024 * 1024;
+    }
+
+    function arquivoValido() {
+      return dentroDoLimite() && ehImagem();
+    }
+
+    function ehResponsavelPeloEstabelecimento(estabelecimentoId) {
+      return logado()
         && get(/databases/(default)/documents/estabelecimentos/$(estabelecimentoId)).data.usuarioResponsavelId == request.auth.uid;
     }
 
-    // ===== Imagens de produtos =====
-    match /produtos/{produtoId}/imagens/{allPaths=**} {
-      allow read: if true;
-      allow write: if request.auth != null
-        && request.resource.size < 5 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+    // ===== Avatar do usuário (imagem) =====
+    match /usuarios/{uid}/avatar.png {
+      allow read: if logado();
+      allow create, update: if logado() && request.auth.uid == uid && arquivoValido();
+      allow delete: if logado() && request.auth.uid == uid;
     }
 
-    // ===== Bloqueio por padrão =====
+    // ===== Imagens do estabelecimento (somente o responsável) =====
+    match /estabelecimentos/{estabelecimentoId}/imagens/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ehResponsavelPeloEstabelecimento(estabelecimentoId) && arquivoValido();
+      allow delete: if ehResponsavelPeloEstabelecimento(estabelecimentoId);
+    }
+
+    // ===== Imagens de produto: caminho vinculado ao estabelecimento dono do produto =====
+    match /estabelecimentos/{estabelecimentoId}/produtos/{produtoId}/imagens/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ehResponsavelPeloEstabelecimento(estabelecimentoId)
+        && get(/databases/(default)/documents/produtos/$(produtoId)).data.estabelecimentoId == estabelecimentoId
+        && arquivoValido();
+      allow delete: if ehResponsavelPeloEstabelecimento(estabelecimentoId)
+        && get(/databases/(default)/documents/produtos/$(produtoId)).data.estabelecimentoId == estabelecimentoId;
+    }
+
+    // ===== Bloqueio por padrão (caminhos arbitrários negados) =====
     match /{allPaths=**} {
       allow read, write: if false;
     }

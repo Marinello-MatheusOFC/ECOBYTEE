@@ -38,16 +38,27 @@ service cloud.firestore {
     // ===== usuários (doc id = UID) =====
     match /usuarios/{uid} {
       allow read: if logado() && (uid == request.auth.uid || isAdmin());
+
+      // Autocadastro: o doc id precisa ser o próprio UID e nunca pode nascer como Administrador.
       allow create: if logado()
         && uid == request.auth.uid
         && request.resource.data.uid == uid
         && request.resource.data.perfil != 'Administrador';
+
+      // O UID é imutável para todos. Fora isso:
+      // - Administrador pode ajustar perfil/ativo (fluxo confiável).
+      // - O próprio usuário só altera campos comuns, jamais perfil/ativo/criadoEm/uid.
+      // Mudança de perfil acontece exclusivamente pelo backend (Admin SDK), que ignora regras.
       allow update: if logado()
-        && (uid == request.auth.uid || isAdmin())
+        && request.resource.data.uid == resource.data.uid
         && request.resource.data.uid == uid
-        && (isAdmin()
-            || (request.resource.data.perfil != 'Administrador'
-                && request.resource.data.ativo == resource.data.ativo));
+        && (
+          isAdmin()
+          || (uid == request.auth.uid
+              && request.resource.data.diff(resource.data).affectedKeys()
+                  .hasOnly(['nome', 'email', 'atualizadoEm']))
+        );
+
       allow delete: if isAdmin();
     }
 
@@ -64,11 +75,16 @@ service cloud.firestore {
         && request.resource.data.usuarioResponsavelId == request.auth.uid
         && request.resource.data.aprovado == false
         && request.resource.data.ativo == true;
+
+      // O proprietário (usuarioResponsavelId) e a aprovação são imutáveis pelo cliente.
+      // O dono só altera campos cadastrais comuns; a aprovação é exclusiva do Administrador.
       allow update: if isAdmin()
         || (isParceiro()
             && resource.data.usuarioResponsavelId == request.auth.uid
-            && request.resource.data.usuarioResponsavelId == request.auth.uid
-            && request.resource.data.aprovado == resource.data.aprovado);
+            && request.resource.data.usuarioResponsavelId == resource.data.usuarioResponsavelId
+            && request.resource.data.diff(resource.data).affectedKeys()
+                .hasOnly(['nomeFantasia', 'razaoSocial', 'telefone', 'email', 'descricao', 'endereco', 'ativo', 'atualizadoEm']));
+
       allow delete: if isAdmin();
     }
 
