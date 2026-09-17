@@ -4,6 +4,7 @@ using EcoByte.Web.Repositories;
 using EcoByte.Web.Security;
 using EcoByte.Web.Services;
 using FirebaseAdmin;
+using Google.Api.Gax;
 using Google.Cloud.Firestore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 
@@ -80,7 +81,14 @@ if (firebaseEnabled)
 
     builder.Services.AddSingleton(firebaseConfig);
 
-    builder.Services.AddSingleton(FirestoreDb.Create(firebaseConfig.ProjectId));
+    builder.Services.AddSingleton(
+        firebaseConfig.UseEmulator
+            ? new FirestoreDbBuilder
+            {
+                ProjectId = firebaseConfig.ProjectId,
+                EmulatorDetection = EmulatorDetection.EmulatorOnly
+            }.Build()
+            : FirestoreDb.Create(firebaseConfig.ProjectId));
 
     try
     {

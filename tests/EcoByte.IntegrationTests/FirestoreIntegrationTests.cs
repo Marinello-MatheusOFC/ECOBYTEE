@@ -1,4 +1,5 @@
 using EcoByte.IntegrationTests;
+using Google.Api.Gax;
 using Google.Cloud.Firestore;
 
 public class FirestoreIntegrationTests
@@ -11,7 +12,11 @@ public class FirestoreIntegrationTests
     private static FirestoreDb CriarDb()
     {
         EmuladorGuarda.Validar();
-        return FirestoreDb.Create(AmbienteEmulador.Projeto);
+        return new FirestoreDbBuilder
+        {
+            ProjectId = AmbienteEmulador.Projeto,
+            EmulatorDetection = EmulatorDetection.EmulatorOnly
+        }.Build();
     }
 
     [SkippableFact]

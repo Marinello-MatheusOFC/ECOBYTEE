@@ -3,6 +3,7 @@ namespace EcoByte.IntegrationTests;
 public static class AmbienteEmulador
 {
     public const string Projeto = "ecobyte-testes";
+    public const string ProjetoAuthAdmin = "demo-ecobyte";
     public const string HostAuth = "127.0.0.1:9099";
     public const string HostFirestore = "127.0.0.1:8080";
     public const string HostStorage = "127.0.0.1:9199";
