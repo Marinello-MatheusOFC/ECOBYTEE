@@ -14,6 +14,7 @@ public class SolicitacaoServiceTests
     private readonly Mock<ISolicitacaoRepository> _solicitacaoRepo;
     private readonly Mock<IProdutoRepository> _produtoRepo;
     private readonly Mock<IEstabelecimentoRepository> _estabelecimentoRepo;
+    private readonly Mock<ITransacaoFirestore> _transacao;
     private readonly Mock<ILogService> _logService;
     private readonly SolicitacaoService _service;
 
@@ -22,11 +23,20 @@ public class SolicitacaoServiceTests
         _solicitacaoRepo = new Mock<ISolicitacaoRepository>();
         _produtoRepo = new Mock<IProdutoRepository>();
         _estabelecimentoRepo = new Mock<IEstabelecimentoRepository>();
+        _transacao = new Mock<ITransacaoFirestore>();
         _logService = new Mock<ILogService>();
+
+        _transacao
+            .Setup(t => t.RodarTransacaoAsync(
+                It.IsAny<Func<Transaction, Task<string>>>(), It.IsAny<CancellationToken>()))
+            .Returns<Func<Transaction, Task<string>>, CancellationToken>(
+                (operacao, _) => operacao(null!));
+
         _service = new SolicitacaoService(
             _solicitacaoRepo.Object,
             _produtoRepo.Object,
             _estabelecimentoRepo.Object,
+            _transacao.Object,
             _logService.Object);
     }
 
@@ -47,7 +57,7 @@ public class SolicitacaoServiceTests
     [Fact]
     public async Task CriarSolicitacao_ProdutoNaoEncontrado_LancaExcecao()
     {
-        _produtoRepo.Setup(r => r.ObterPorIdAsync("prod1"))
+        _produtoRepo.Setup(r => r.ObterNaTransacaoAsync("prod1", It.IsAny<Transaction>()))
             .ReturnsAsync((Produto?)null);
 
         await Assert.ThrowsAsync<ProdutoNaoEncontradoException>(
@@ -63,7 +73,7 @@ public class SolicitacaoServiceTests
             QuantidadeDisponivel = 2,
             Status = StatusProduto.Disponivel.ToFirestoreString()
         };
-        _produtoRepo.Setup(r => r.ObterPorIdAsync("prod1"))
+        _produtoRepo.Setup(r => r.ObterNaTransacaoAsync("prod1", It.IsAny<Transaction>()))
             .ReturnsAsync(produto);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -79,7 +89,7 @@ public class SolicitacaoServiceTests
             QuantidadeDisponivel = 10,
             Status = StatusProduto.Esgotado.ToFirestoreString()
         };
-        _produtoRepo.Setup(r => r.ObterPorIdAsync("prod1"))
+        _produtoRepo.Setup(r => r.ObterNaTransacaoAsync("prod1", It.IsAny<Transaction>()))
             .ReturnsAsync(produto);
 
         await Assert.ThrowsAsync<InvalidOperationException>(
@@ -96,15 +106,20 @@ public class SolicitacaoServiceTests
             Status = StatusProduto.Disponivel.ToFirestoreString(),
             EstabelecimentoId = "estab1"
         };
-        _produtoRepo.Setup(r => r.ObterPorIdAsync("prod1"))
+        _produtoRepo.Setup(r => r.ObterNaTransacaoAsync("prod1", It.IsAny<Transaction>()))
             .ReturnsAsync(produto);
-        _solicitacaoRepo.Setup(r => r.CriarAsync(It.IsAny<Solicitacao>()))
+        _produtoRepo.Setup(r => r.AtualizarNaTransacaoAsync(
+                It.IsAny<Produto>(), It.IsAny<Transaction>()))
+            .Returns(Task.CompletedTask);
+        _solicitacaoRepo.Setup(r => r.CriarNaTransacaoAsync(
+                It.IsAny<Solicitacao>(), It.IsAny<Transaction>()))
             .ReturnsAsync("sol1");
 
         var id = await _service.CriarSolicitacaoAsync("prod1", "user1", 2);
 
         Assert.Equal("sol1", id);
-        _solicitacaoRepo.Verify(r => r.CriarAsync(It.IsAny<Solicitacao>()), Times.Once);
+        _solicitacaoRepo.Verify(r => r.CriarNaTransacaoAsync(
+            It.IsAny<Solicitacao>(), It.IsAny<Transaction>()), Times.Once);
     }
 
     [Fact]

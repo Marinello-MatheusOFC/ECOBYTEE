@@ -62,6 +62,7 @@ public static class ServicosIntegracao
             servicos.AddSingleton<IProdutoRepository, ProdutoRepository>();
             servicos.AddSingleton<IProdutoService, ProdutoService>();
             servicos.AddSingleton<ISolicitacaoRepository, SolicitacaoRepository>();
+            servicos.AddSingleton<ITransacaoFirestore, TransacaoFirestore>();
             servicos.AddSingleton<ILogService, LogRepository>();
             servicos.AddSingleton<ISolicitacaoService, SolicitacaoService>();
 

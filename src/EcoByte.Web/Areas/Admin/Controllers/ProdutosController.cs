@@ -47,8 +47,9 @@ public class ProdutosController : Controller
         return View(produto);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create()
     {
+        await CarregarEstabelecimentosAsync();
         return View(new ProdutoFormularioViewModel { DataLimite = DateTime.Now.AddDays(7) });
     }
 
@@ -56,7 +57,11 @@ public class ProdutosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(ProdutoFormularioViewModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid || await EstabelecimentoInvalidoAsync(model))
+        {
+            await CarregarEstabelecimentosAsync();
+            return View(model);
+        }
 
         try
         {
@@ -74,7 +79,7 @@ public class ProdutosController : Controller
                 EhVegano = model.EhVegano,
                 EhSemGluten = model.EhSemGluten,
                 EhSemLactose = model.EhSemLactose,
-                EstabelecimentoId = string.Empty,
+                EstabelecimentoId = model.EstabelecimentoId!,
                 CriadoEm = Timestamp.FromDateTime(DateTime.UtcNow)
             };
 
@@ -85,6 +90,7 @@ public class ProdutosController : Controller
         }
         catch (Exception)
         {
+            await CarregarEstabelecimentosAsync();
             ModelState.AddModelError(string.Empty, "Erro ao criar produto.");
             return View(model);
         }
@@ -108,9 +114,11 @@ public class ProdutosController : Controller
             Categoria = EnumFirestoreExtensions.ParseCategoria(produto.Categoria) ?? CategoriaProduto.Outros,
             EhVegano = produto.EhVegano,
             EhSemGluten = produto.EhSemGluten,
-            EhSemLactose = produto.EhSemLactose
+            EhSemLactose = produto.EhSemLactose,
+            EstabelecimentoId = produto.EstabelecimentoId
         };
 
+        await CarregarEstabelecimentosAsync();
         return View(model);
     }
 
@@ -118,7 +126,11 @@ public class ProdutosController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Edit(string id, ProdutoFormularioViewModel model)
     {
-        if (!ModelState.IsValid) return View(model);
+        if (!ModelState.IsValid || await EstabelecimentoInvalidoAsync(model))
+        {
+            await CarregarEstabelecimentosAsync();
+            return View(model);
+        }
 
         var produto = await ObterProdutoOuNulo(id);
         if (produto is null) return NotFound();
@@ -134,6 +146,7 @@ public class ProdutosController : Controller
         produto.EhVegano = model.EhVegano;
         produto.EhSemGluten = model.EhSemGluten;
         produto.EhSemLactose = model.EhSemLactose;
+        produto.EstabelecimentoId = model.EstabelecimentoId!;
 
         await _produtoRepository.AtualizarAsync(produto);
 
@@ -173,5 +186,21 @@ public class ProdutosController : Controller
         {
             return null;
         }
+    }
+
+    private async Task<bool> EstabelecimentoInvalidoAsync(ProdutoFormularioViewModel model)
+    {
+        var estabelecimento = await _estabelecimentoService.ObterPorIdAsync(model.EstabelecimentoId ?? string.Empty);
+        if (estabelecimento is not null) return false;
+
+        ModelState.AddModelError(nameof(model.EstabelecimentoId), "Estabelecimento invalido.");
+        return true;
+    }
+
+    private async Task CarregarEstabelecimentosAsync()
+    {
+        var estabelecimentos = await _estabelecimentoService.ObterTodosAsync(1, 500);
+        ViewBag.Estabelecimentos = new Microsoft.AspNetCore.Mvc.Rendering.SelectList(
+            estabelecimentos, nameof(Estabelecimento.Id), nameof(Estabelecimento.NomeFantasia));
     }
 }

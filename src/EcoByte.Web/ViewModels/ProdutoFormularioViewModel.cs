@@ -42,6 +42,10 @@ public class ProdutoFormularioViewModel
     [Display(Name = "Categoria")]
     public CategoriaProduto Categoria { get; set; }
 
+    [Required(ErrorMessage = "Selecione um estabelecimento.")]
+    [Display(Name = "Estabelecimento")]
+    public string? EstabelecimentoId { get; set; }
+
     [Display(Name = "Vegano")]
     public bool EhVegano { get; set; }
 

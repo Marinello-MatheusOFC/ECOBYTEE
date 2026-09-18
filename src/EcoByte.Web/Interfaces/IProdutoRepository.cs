@@ -1,6 +1,7 @@
 namespace EcoByte.Web.Interfaces;
 
 using EcoByte.Web.Models;
+using Google.Cloud.Firestore;
 
 public interface IProdutoRepository
 {
@@ -25,6 +26,10 @@ public interface IProdutoRepository
     Task<string> CriarAsync(Produto produto);
 
     Task AtualizarAsync(Produto produto);
+
+    Task<Produto?> ObterNaTransacaoAsync(string id, Transaction transaction);
+
+    Task AtualizarNaTransacaoAsync(Produto produto, Transaction transaction);
 
     Task<List<Produto>> ObterPorEstabelecimentoAsync(string estabelecimentoId, int limite, int offset);
 

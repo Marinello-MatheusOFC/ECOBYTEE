@@ -95,6 +95,9 @@ h1, h2, h3 { color: var(--verde-escuro); }
 
 .btn-registro:hover { opacity: 0.9; text-decoration: none; }
 
+.logout-form { margin: 0; }
+.logout-form .btn-registro { line-height: 1.2; }
+
 .navbar-toggle {
     display: none;
     background: none;

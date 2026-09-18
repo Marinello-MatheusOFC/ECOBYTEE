@@ -121,6 +121,8 @@ public class ContaController : Controller
         return View("Error/403");
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Logout()
     {
         var uid = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;

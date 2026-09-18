@@ -51,6 +51,7 @@ builder.Services.AddScoped<IEstabelecimentoRepository, EstabelecimentoRepository
 builder.Services.AddScoped<IEstabelecimentoService, EstabelecimentoService>();
 builder.Services.AddScoped<ISolicitacaoRepository, SolicitacaoRepository>();
 builder.Services.AddScoped<ISolicitacaoService, SolicitacaoService>();
+builder.Services.AddScoped<ITransacaoFirestore, TransacaoFirestore>();
 builder.Services.AddScoped<IImpactoService, ImpactoService>();
 builder.Services.AddScoped<IConquistaService, ConquistaService>();
 builder.Services.AddScoped<ILogService, LogRepository>();

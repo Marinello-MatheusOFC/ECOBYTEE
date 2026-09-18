@@ -13,26 +13,39 @@ public class SolicitacaoService : ISolicitacaoService
     private readonly ISolicitacaoRepository _repository;
     private readonly IProdutoRepository _produtoRepository;
     private readonly IEstabelecimentoRepository _estabelecimentoRepository;
+    private readonly ITransacaoFirestore _transacao;
     private readonly ILogService _logService;
 
     public SolicitacaoService(
         ISolicitacaoRepository repository,
         IProdutoRepository produtoRepository,
         IEstabelecimentoRepository estabelecimentoRepository,
+        ITransacaoFirestore transacao,
         ILogService logService)
     {
         _repository = repository;
         _produtoRepository = produtoRepository;
         _estabelecimentoRepository = estabelecimentoRepository;
+        _transacao = transacao;
         _logService = logService;
     }
 
     public async Task<string> CriarSolicitacaoAsync(string produtoId, string consumidorId, int quantidade)
     {
+        var id = await _transacao.RodarTransacaoAsync(
+            transaction => CriarSolicitacaoNaTransacaoAsync(produtoId, consumidorId, quantidade, transaction));
+
+        await _logService.RegistrarAsync(consumidorId, "Criar", "Solicitacao", id, "Sucesso");
+        return id;
+    }
+
+    private async Task<string> CriarSolicitacaoNaTransacaoAsync(
+        string produtoId, string consumidorId, int quantidade, Transaction transaction)
+    {
         if (quantidade <= 0)
             throw new ArgumentException("Quantidade deve ser maior que zero.");
 
-        var produto = await _produtoRepository.ObterPorIdAsync(produtoId)
+        var produto = await _produtoRepository.ObterNaTransacaoAsync(produtoId, transaction)
             ?? throw new ProdutoNaoEncontradoException(produtoId);
 
         if (produto.QuantidadeDisponivel < quantidade)
@@ -52,15 +65,13 @@ public class SolicitacaoService : ISolicitacaoService
             ReservadoAte = Timestamp.FromDateTime(DateTime.UtcNow.AddHours(24))
         };
 
-        var id = await _repository.CriarAsync(solicitacao);
+        var id = await _repository.CriarNaTransacaoAsync(solicitacao, transaction);
 
         produto.QuantidadeDisponivel -= quantidade;
         if (produto.QuantidadeDisponivel == 0)
             produto.Status = StatusProduto.Esgotado.ToFirestoreString();
 
-        await _produtoRepository.AtualizarAsync(produto);
-
-        await _logService.RegistrarAsync(consumidorId, "Criar", "Solicitacao", id, "Sucesso");
+        await _produtoRepository.AtualizarNaTransacaoAsync(produto, transaction);
 
         return id;
     }

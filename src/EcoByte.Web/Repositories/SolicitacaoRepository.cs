@@ -82,6 +82,16 @@ public class SolicitacaoRepository : ISolicitacaoRepository
         return docRef.Id;
     }
 
+    public Task<string> CriarNaTransacaoAsync(Solicitacao solicitacao, Transaction transaction)
+    {
+        if (_db is null) throw new FirestoreNotConfiguredException();
+
+        var docRef = ObterColecao().Document();
+        solicitacao.Id = docRef.Id;
+        transaction.Create(docRef, solicitacao);
+        return Task.FromResult(docRef.Id);
+    }
+
     public async Task AtualizarAsync(Solicitacao solicitacao)
     {
         if (_db is null) throw new FirestoreNotConfiguredException();

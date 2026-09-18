@@ -20,7 +20,10 @@
                 @if (User.Identity?.IsAuthenticated == true)
                 {
                     <a asp-controller="Perfil" asp-action="Index" class="btn-login">@User.Identity.Name</a>
-                    <a asp-controller="Conta" asp-action="Logout" class="btn-registro">Sair</a>
+                    <form asp-controller="Conta" asp-action="Logout" method="post" class="logout-form">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn-registro">Sair</button>
+                    </form>
                 }
                 else
                 {

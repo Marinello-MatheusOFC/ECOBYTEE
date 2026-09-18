@@ -144,6 +144,28 @@ public class ProdutoRepository : IProdutoRepository
         await docRef.SetAsync(produto, SetOptions.MergeAll);
     }
 
+    public async Task<Produto?> ObterNaTransacaoAsync(string id, Transaction transaction)
+    {
+        if (_db is null)
+            throw new FirestoreNotConfiguredException();
+
+        var docRef = _db.Collection(ColecaoProdutos).Document(id);
+        var snapshot = await transaction.GetSnapshotAsync(docRef);
+
+        return snapshot.Exists ? snapshot.ConvertTo<Produto>() : null;
+    }
+
+    public Task AtualizarNaTransacaoAsync(Produto produto, Transaction transaction)
+    {
+        if (_db is null)
+            throw new FirestoreNotConfiguredException();
+
+        var docRef = _db.Collection(ColecaoProdutos).Document(produto.Id!);
+        produto.AtualizadoEm = Timestamp.FromDateTime(DateTime.UtcNow);
+        transaction.Set(docRef, produto, SetOptions.MergeAll);
+        return Task.CompletedTask;
+    }
+
     public async Task<List<Produto>> ObterPorEstabelecimentoAsync(
         string estabelecimentoId, int limite, int offset)
     {

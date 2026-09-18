@@ -37,6 +37,13 @@
             <label asp-for="Categoria"></label>
             <select asp-for="Categoria" asp-items="Html.GetEnumSelectList<CategoriaProduto>()"></select>
         </div>
+        <div class="form-group">
+            <label asp-for="EstabelecimentoId"></label>
+            <select asp-for="EstabelecimentoId" asp-items="ViewBag.Estabelecimentos">
+                <option value="">Selecione...</option>
+            </select>
+            <span asp-validation-for="EstabelecimentoId"></span>
+        </div>
         <button type="submit" class="btn btn-primary">Salvar</button>
         <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
     </form>
